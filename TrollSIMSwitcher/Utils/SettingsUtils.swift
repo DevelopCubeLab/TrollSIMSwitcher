@@ -41,10 +41,16 @@ class SettingsUtils {
     
     /// 获取是否显示卡槽标签
     func getShowSlotLabel() -> Bool {
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            return false
+        }
         return plistManager.getBool(key: "ShowSlotLabel", defaultValue: true)
     }
     
     func setShowSlotLabel(enable: Bool) {
+        if UIDevice.current.userInterfaceIdiom == .pad { // 防止iPad用户修改配置文件绕过限制
+            return
+        }
         plistManager.setBool(key: "ShowSlotLabel", value: enable)
         plistManager.apply()
     }
@@ -59,7 +65,7 @@ class SettingsUtils {
         plistManager.apply()
     }
     
-    /// 获取是否显示卡槽标签
+    /// 获取是否显示电话号码
     func getShowPhoneNumber() -> Bool {
         return plistManager.getBool(key: "ShowPhoneNumber", defaultValue: false)
     }

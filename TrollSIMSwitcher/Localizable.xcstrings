@@ -65,6 +65,22 @@
         }
       }
     },
+    "EmergencyOnly" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emergency Only"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅限紧急呼叫"
+          }
+        }
+      }
+    },
     "EnableCompatibilityModeMessage" : {
       "localizations" : {
         "en" : {

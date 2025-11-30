@@ -7,6 +7,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         
+        if #unavailable(iOS 14.0) { // 不支持iOS 14.0以下版本 直接退出程序
+            exit(0)
+        }
+        
         // 设置通知代理
         UNUserNotificationCenter.current().delegate = self
         

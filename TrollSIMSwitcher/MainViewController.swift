@@ -61,7 +61,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     // 更新数据和更新UI
     @objc private func updateSIMList() {
         DispatchQueue.main.async {
-            self.SIMSlotList = CoreTelephonyController.instance.getAllSIMSlots()
+            self.loadSIMSlots()
             self.tableView.reloadData()
         }
     }
@@ -124,6 +124,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
 //                text = text.appending(slot.toString()).appending("\n")
 //            }
 //            return text
+        
 //        }
 #endif
         if section == 2 {
@@ -149,6 +150,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                     cell.textLabel?.text = "\(cell.textLabel?.text ?? "") - \(slot.operatorName)"
                 } else if slot.registrationStatus == "kCTRegistrationStatusNotRegistered" { // 无服务
                     cell.textLabel?.text = "\(cell.textLabel?.text ?? "") - \(NSLocalizedString("NoService", comment: ""))"
+                } else if slot.registrationStatus == "kCTRegistrationStatusEmergencyOnly" { // 仅限紧急呼叫
+                    cell.textLabel?.text = "\(cell.textLabel?.text ?? "") - \(NSLocalizedString("EmergencyOnly", comment: ""))"
                 }
             }
             if SettingsUtils.instance.getShowPhoneNumber() { // 显示电话号码
@@ -180,7 +183,15 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             switchView.tag = indexPath.row // 设置识别id
             if indexPath.row == 0 { // 获取设置兼容模式
                 switchView.isOn = SettingsUtils.instance.getEnableCompatibilitySwitchMode() // 从配置文件中获取状态
+                if SIMSlotList.count < 1 { // 只有单卡的情况
+                    cell.textLabel?.textColor = .lightGray //文本变成灰色
+                    switchView.isEnabled = false // 禁用开关
+                }
             } else if indexPath.row == 1 { // 显示卡槽标签
+                if UIDevice.current.userInterfaceIdiom == .pad {
+                    cell.textLabel?.textColor = .lightGray //文本变成灰色
+                    switchView.isEnabled = false // 禁用开关
+                }
                 switchView.isOn = SettingsUtils.instance.getShowSlotLabel() // 从配置文件中获取状态
             } else if indexPath.row == 2 { // 显示运营商名称
                 switchView.isOn = SettingsUtils.instance.getShowOperatorName() // 从配置文件中获取状态
