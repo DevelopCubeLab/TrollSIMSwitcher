@@ -8,11 +8,41 @@
 
 /* Begin PBXBuildFile section */
 		17CE42892ED9948D00045AE5 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17CE42882ED9948D00045AE5 /* CoreTelephony.framework */; };
+		17CE43E92EDC146800045AE5 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17CE43E82EDC146800045AE5 /* WidgetKit.framework */; };
+		17CE43EB2EDC146800045AE5 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17CE43EA2EDC146800045AE5 /* SwiftUI.framework */; };
+		17CE43F62EDC146900045AE5 /* TrollSIMSwitcherWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 17CE43E72EDC146800045AE5 /* TrollSIMSwitcherWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		17CE43F42EDC146900045AE5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 174CC6502ED813F5003CA997 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 17CE43E62EDC146800045AE5;
+			remoteInfo = TrollSIMSwitcherWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		17CE43FB2EDC146900045AE5 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				17CE43F62EDC146900045AE5 /* TrollSIMSwitcherWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		174CC6582ED813F5003CA997 /* TrollSIMSwitcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrollSIMSwitcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		17CE42882ED9948D00045AE5 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
+		17CE43E72EDC146800045AE5 /* TrollSIMSwitcherWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TrollSIMSwitcherWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		17CE43E82EDC146800045AE5 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		17CE43EA2EDC146800045AE5 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -23,6 +53,13 @@
 			);
 			target = 174CC6572ED813F5003CA997 /* TrollSIMSwitcher */;
 		};
+		17CE43FA2EDC146900045AE5 /* Exceptions for "TrollSIMSwitcherWidget" folder in "TrollSIMSwitcherWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 17CE43E62EDC146800045AE5 /* TrollSIMSwitcherWidgetExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +69,14 @@
 				174CC66A2ED813F6003CA997 /* Exceptions for "TrollSIMSwitcher" folder in "TrollSIMSwitcher" target */,
 			);
 			path = TrollSIMSwitcher;
+			sourceTree = "<group>";
+		};
+		17CE43EC2EDC146800045AE5 /* TrollSIMSwitcherWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				17CE43FA2EDC146900045AE5 /* Exceptions for "TrollSIMSwitcherWidget" folder in "TrollSIMSwitcherWidgetExtension" target */,
+			);
+			path = TrollSIMSwitcherWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -45,6 +90,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		17CE43E42EDC146800045AE5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				17CE43EB2EDC146800045AE5 /* SwiftUI.framework in Frameworks */,
+				17CE43E92EDC146800045AE5 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -52,6 +106,7 @@
 			isa = PBXGroup;
 			children = (
 				174CC65A2ED813F5003CA997 /* TrollSIMSwitcher */,
+				17CE43EC2EDC146800045AE5 /* TrollSIMSwitcherWidget */,
 				174CC7732ED8360D003CA997 /* Frameworks */,
 				174CC6592ED813F5003CA997 /* Products */,
 			);
@@ -61,6 +116,7 @@
 			isa = PBXGroup;
 			children = (
 				174CC6582ED813F5003CA997 /* TrollSIMSwitcher.app */,
+				17CE43E72EDC146800045AE5 /* TrollSIMSwitcherWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -69,6 +125,8 @@
 			isa = PBXGroup;
 			children = (
 				17CE42882ED9948D00045AE5 /* CoreTelephony.framework */,
+				17CE43E82EDC146800045AE5 /* WidgetKit.framework */,
+				17CE43EA2EDC146800045AE5 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -83,10 +141,12 @@
 				174CC6542ED813F5003CA997 /* Sources */,
 				174CC6552ED813F5003CA997 /* Frameworks */,
 				174CC6562ED813F5003CA997 /* Resources */,
+				17CE43FB2EDC146900045AE5 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				17CE43F52EDC146900045AE5 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				174CC65A2ED813F5003CA997 /* TrollSIMSwitcher */,
@@ -97,6 +157,28 @@
 			productName = TrollSIMSwitcher;
 			productReference = 174CC6582ED813F5003CA997 /* TrollSIMSwitcher.app */;
 			productType = "com.apple.product-type.application";
+		};
+		17CE43E62EDC146800045AE5 /* TrollSIMSwitcherWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 17CE43F72EDC146900045AE5 /* Build configuration list for PBXNativeTarget "TrollSIMSwitcherWidgetExtension" */;
+			buildPhases = (
+				17CE43E32EDC146800045AE5 /* Sources */,
+				17CE43E42EDC146800045AE5 /* Frameworks */,
+				17CE43E52EDC146800045AE5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				17CE43EC2EDC146800045AE5 /* TrollSIMSwitcherWidget */,
+			);
+			name = TrollSIMSwitcherWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = TrollSIMSwitcherWidgetExtension;
+			productReference = 17CE43E72EDC146800045AE5 /* TrollSIMSwitcherWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -111,6 +193,9 @@
 					174CC6572ED813F5003CA997 = {
 						CreatedOnToolsVersion = 16.4;
 						LastSwiftMigration = 1640;
+					};
+					17CE43E62EDC146800045AE5 = {
+						CreatedOnToolsVersion = 16.4;
 					};
 				};
 			};
@@ -130,12 +215,20 @@
 			projectRoot = "";
 			targets = (
 				174CC6572ED813F5003CA997 /* TrollSIMSwitcher */,
+				17CE43E62EDC146800045AE5 /* TrollSIMSwitcherWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		174CC6562ED813F5003CA997 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		17CE43E52EDC146800045AE5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -152,7 +245,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		17CE43E32EDC146800045AE5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		17CE43F52EDC146900045AE5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 17CE43E62EDC146800045AE5 /* TrollSIMSwitcherWidgetExtension */;
+			targetProxy = 17CE43F42EDC146900045AE5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		174CC66C2ED813F6003CA997 /* Debug */ = {
@@ -163,7 +271,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = X2WABLB38D;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TrollSIMSwitcher/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Troll SIM Switcher";
@@ -199,7 +307,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = X2WABLB38D;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TrollSIMSwitcher/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Troll SIM Switcher";
@@ -349,6 +457,70 @@
 			};
 			name = Release;
 		};
+		17CE43F82EDC146900045AE5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TrollSIMSwitcherWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TrollSIMSwitcherWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.developlab.TrollSIMSwitcher.TrollSIMSwitcherWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		17CE43F92EDC146900045AE5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TrollSIMSwitcherWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TrollSIMSwitcherWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.developlab.TrollSIMSwitcher.TrollSIMSwitcherWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -366,6 +538,15 @@
 			buildConfigurations = (
 				174CC66C2ED813F6003CA997 /* Debug */,
 				174CC66D2ED813F6003CA997 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		17CE43F72EDC146900045AE5 /* Build configuration list for PBXNativeTarget "TrollSIMSwitcherWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				17CE43F82EDC146900045AE5 /* Debug */,
+				17CE43F92EDC146900045AE5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

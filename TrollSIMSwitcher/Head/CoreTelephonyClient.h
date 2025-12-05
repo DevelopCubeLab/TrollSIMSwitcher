@@ -559,8 +559,7 @@
 -(void)setActiveBandInfo:(id)arg1 bands:(id)arg2 error:(id*)arg3 ;
 -(void)setActiveUserDataSelection:(CTXPCServiceSubscriptionContext *)context completion:(/*^block*/id)completion;
 //-(void)setActiveUserDataSelection:(CTXPCServiceSubscriptionContext *)context error:(NSError **)error;
-- (void)setActiveUserDataSelection:(CTXPCServiceSubscriptionContext *)context
-                             error:(NSError **)error;
+- (void)setActiveUserDataSelection:(CTXPCServiceSubscriptionContext *)context error:(NSError **)error;
 //-(void)setActiveUserDataSelection:(id)arg1 error:(id*)arg2;
 -(id)setApplicationCategory:(id)arg1 ;
 -(void)setBandInfo:(id)arg1 bands:(id)arg2 completion:(/*^block*/id)arg3 ;
@@ -583,11 +582,8 @@
 -(id)setLowDataMode:(id)arg1 enable:(BOOL)arg2;
 //-(id)setMaxDataRate:(CTXPCServiceSubscriptionContext *)context rate:(long long)arg2;
 //-(id)setMaxDataRate:(CTXPCServiceSubscriptionContext *)context rate:(long long)rate error:(NSError **)error;
-- (id)setMaxDataRate:(CTXPCServiceSubscriptionContext *)ctx
-                rate:(long long)rate;
-- (void)setMaxDataRate:(CTXPCServiceSubscriptionContext *)ctx
-                  rate:(long long)rate
-            completion:(void (^)(NSError *error))completion;
+- (id)setMaxDataRate:(CTXPCServiceSubscriptionContext *)context rate:(long long)rate;
+- (void)setMaxDataRate:(CTXPCServiceSubscriptionContext *)context rate:(long long)rate completion:(void (^)(NSError *error))completion;
 -(id)setOverriddenInterfaceCostInexpensive:(BOOL)arg1;
 -(id)setPacketContextActiveByServiceType:(id)arg1 connectionType:(int)arg2 active:(BOOL)arg3 ;
 -(void)setPacketContextActiveByServiceType:(id)arg1 connectionType:(int)arg2 active:(BOOL)arg3 completion:(/*^block*/id)arg4 ;

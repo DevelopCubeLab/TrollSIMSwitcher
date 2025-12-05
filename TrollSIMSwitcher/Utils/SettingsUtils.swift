@@ -14,6 +14,14 @@ class SettingsUtils {
         self.plistManager = PlistManagerUtils.instance(for: "Settings")
     }
     
+    static let SwitchToSlot1ID = "com.developlab.TrollSIMSwitcher.SwitchToSlot1"
+    static let SwitchToSlot2ID = "com.developlab.TrollSIMSwitcher.SwitchToSlot2"
+    static let SwitchNetworkID = "com.developlab.TrollSIMSwitcher.SwitchTo"
+    static let SwitchTo2GID = "com.developlab.TrollSIMSwitcher.SwitchTo2G"
+    static let SwitchTo3GID = "com.developlab.TrollSIMSwitcher.SwitchTo3G"
+    static let SwitchTo4GID = "com.developlab.TrollSIMSwitcher.SwitchTo4G"
+    static let SwitchTo5GID = "com.developlab.TrollSIMSwitcher.SwitchTo5G"
+    
     private func setDefaultSettings() {
         
         if self.plistManager.isPlistExist() {
@@ -75,17 +83,27 @@ class SettingsUtils {
         plistManager.apply()
     }
     
-    /// 获取启动App时自动切换
-    func getExitAfterSwitching() -> Bool {
-        return plistManager.getBool(key: "ExitAfterSwitching", defaultValue: false)
+    /// 获取是否切换后退出应用程序
+    func getExitAfterQuickSwitching() -> Bool {
+        return plistManager.getBool(key: "ExitAfterQuickSwitching", defaultValue: false)
     }
     
-    func setExitAfterSwitching(enable: Bool) {
-        plistManager.setBool(key: "ExitAfterSwitching", value: enable)
+    func setExitAfterQuickSwitching(enable: Bool) {
+        plistManager.setBool(key: "ExitAfterQuickSwitching", value: enable)
         plistManager.apply()
     }
     
-    /// 获取是否切换后退出应用程序
+    /// 获取是否开启图标快捷方式
+    func getEnableHomeScreenQuickActions() -> Bool {
+        return plistManager.getBool(key: "EnableHomeScreenQuickActions", defaultValue: false)
+    }
+    
+    func setEnableHomeScreenQuickActions(enable: Bool) {
+        plistManager.setBool(key: "EnableHomeScreenQuickActions", value: enable)
+        plistManager.apply()
+    }
+    
+    /// 获取启动App时自动切换
     func getAutomaticallySwitchWhenStartingApp() -> Bool {
         return plistManager.getBool(key: "AutomaticallySwitchWhenStartingApp", defaultValue: false)
     }
@@ -103,6 +121,63 @@ class SettingsUtils {
     func setEnableNotifications(enable: Bool) {
         plistManager.setBool(key: "EnableNotifications", value: enable)
         plistManager.apply()
+    }
+    
+    func setHomeScreenQuickActions(application: UIApplication) {
+        if getEnableHomeScreenQuickActions() { // 检查是否开启桌面图标快捷方式
+            var shortcutItems: [UIApplicationShortcutItem] = []
+            // 获取全部卡槽信息
+            var SIMSlotList = CoreTelephonyController.instance.getAllSIMSlots()
+            if  SIMSlotList.isEmpty { // 没拿到数据，要么是不支持的设备要么就是没权限
+//                setEnableHomeScreenQuickActions(enable: false)
+                application.shortcutItems = []
+                return
+            }
+            if SIMSlotList.count > 1 { // 解决下iPad没启用蜂窝数据的时候什么都不显示的情况
+                // 筛选掉未启用的卡槽信息
+                SIMSlotList = SIMSlotList.filter { $0.isEnabled }
+            }
+            if SIMSlotList.count > 1 { // 双卡模式下才增加切换卡槽的选项
+                shortcutItems.append(
+                    UIApplicationShortcutItem(
+                        type: SettingsUtils.SwitchToSlot1ID,
+                        localizedTitle: String.localizedStringWithFormat(NSLocalizedString("SwitchTo", comment: ""), String.localizedStringWithFormat(NSLocalizedString("SlotNumber", comment: ""), 1)),
+                        localizedSubtitle: nil,
+                        icon: UIApplicationShortcutIcon(systemImageName: "simcard"),
+                        userInfo: nil
+                    ))
+                shortcutItems.append(
+                    UIApplicationShortcutItem(
+                        type: SettingsUtils.SwitchToSlot2ID,
+                        localizedTitle: String.localizedStringWithFormat(NSLocalizedString("SwitchTo", comment: ""), String.localizedStringWithFormat(NSLocalizedString("SlotNumber", comment: ""), 2)),
+                        localizedSubtitle: nil,
+                        icon: UIApplicationShortcutIcon(systemImageName: "simcard.2"),
+                        userInfo: nil
+                    ))
+            }
+            // 切换网络类型的判断
+            
+            // 获取当前流量卡
+            let slot = SIMSlotList.first { $0.isDataPreferred }
+            
+            for rate in slot?.supportedRates?.rates as! [Int] {
+                let networkText = CellularUtils.getRateText(rate: rate)
+                // 添加可以切换的网络类型
+                shortcutItems.append(
+                    UIApplicationShortcutItem(
+                        type: SettingsUtils.SwitchNetworkID.appending(networkText),
+                        localizedTitle: String.localizedStringWithFormat(NSLocalizedString("SwitchTo", comment: ""), networkText),
+                        localizedSubtitle: nil,
+                        icon: UIApplicationShortcutIcon(systemImageName: "antenna.radiowaves.left.and.right"),
+                        userInfo: nil
+                    ))
+            }
+            // 向系统提交当前的快捷方式
+            application.shortcutItems = shortcutItems
+            
+        } else { // 禁用桌面快捷方式
+            application.shortcutItems = []
+        }
     }
     
 }

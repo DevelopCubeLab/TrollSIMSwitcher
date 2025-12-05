@@ -30,9 +30,19 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         return CTXPCServiceSubscriptionContext(uuid: uuid)
     }
     
-    // 获取当前首选的卡槽ID
+    // 获取当前首选卡槽的context
+    func getDataPreferredContext() -> CTXPCServiceSubscriptionContext? {
+        return coreTelephonyClient!.getPreferredDataSubscriptionContextSync(nil)
+    }
+    
+    // 获取当前首选卡槽的ID
     func getDataPreferredSlotID() -> Int64 {
-        return coreTelephonyClient!.getPreferredDataSubscriptionContextSync(nil)?.slotID ?? -1
+        return getDataPreferredContext()?.slotID ?? -1
+    }
+    
+    // 获取当前首选卡槽的网络类型
+    func getDataPreferredSlotRate() -> Int64 {
+        return coreTelephonyClient!.getMaxDataRate(getDataPreferredContext(), error: nil)
     }
     
     // 获取所有SIM卡卡槽信息
@@ -70,7 +80,7 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
                 // 判断是否支持5G
 //                let supported5G = coreTelephonyClient!.getSupports5G(context, error: nil) // 获取不到 永远返回false
                 var supported5G = false
-                if let rates = supportedDataRates?.rates as? [NSNumber] {
+                if let rates = supportedDataRates?.rates as? [Int64] {
                     supported5G = rates.contains(DataRates._5G.rawValue)
                 }
                 // 获取当前卡设置的网络类型
@@ -89,44 +99,70 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
     }
     
     // 切换卡槽流量
-    func setDataSlot(slot: SIMSlot) -> Bool {
+    func setDataSlot(SIMSlot: SIMSlot) -> Bool {
         
 //        if slot.isDataPreferred { // 已经是首选的数据流量卡了就不要去切换了
 //            return true
 //        }
+        return setDataSlot(slot: SIMSlot.slot)
+    }
+    
+    // 切换卡槽流量
+    func setDataSlot(slot: Int) -> Bool {
+        if slot >= IMEIs.count + 1 { // 切换不能超过IMEI的最大容量，否则肯定失败
+            return false
+        }
         let controlSlot: Int
         // 获取是否开启兼容性模式
         if SettingsUtils.instance.getEnableCompatibilitySwitchMode() {
-            controlSlot = slot.slot == 1 ? 2 : 1
+            controlSlot = slot == 1 ? 2 : 1
         } else {
-            controlSlot = slot.slot
+            controlSlot = slot
         }
         // 获取需要切换卡槽的context
-//        if let context = getServiceSubscriptionContext(slot: slot.slot == 1 ? 2 : 1) {
         if let context = getServiceSubscriptionContext(slot: controlSlot) {
             // 切换数据卡
             coreTelephonyClient!.setActiveUserDataSelection(context, error: nil)
-            
             return true
         }
-        
         return false
     }
     
     // 切换网络类型
-    func setDataRate(slot: SIMSlot, selectRate: Int64) -> Bool {
-        if let context = getServiceSubscriptionContext(slot: slot.slot) {
-            if let result = coreTelephonyClient!.setMaxDataRate(context, rate: selectRate) {
-                NSLog("[TrollSIMSwitcher] 切换网络类型：\(result)") // result是返回的错误
+    func setDataRate(SIMSlot: SIMSlot, selectRate: Int64) -> Bool {
+        return setDataRate(slot: SIMSlot.slot, selectRate: selectRate)
+    }
+    
+    func setDataRate(slot: Int, selectRate: Int64) -> Bool {
+        if let context = getServiceSubscriptionContext(slot: slot) {
+            if let result = coreTelephonyClient!.setMaxDataRate(context, rate: selectRate) { // 这个私有方法只有错误的时候才会返回结果
+                NSLog("[TrollSIMSwitcher] Switching the network type returns:\(result)")
                 return false
             } else {
                 return true
             }
         }
-        
         return false
     }
     
+    // 切换当前数据流量的卡槽的网络类型
+    func setDataPreferredRate(selectRate: Int64) -> Bool {
+        if let context = getDataPreferredContext() {
+            if let result = coreTelephonyClient!.setMaxDataRate(context, rate: selectRate) {
+                NSLog("[TrollSIMSwitcher] Switching the network type returns:\(result)")
+                return false
+            } else {
+                return true
+            }
+        }
+        return false
+    }
+    
+    func setDataPreferredRate(selectRate: DataRates) -> Bool {
+        return setDataPreferredRate(selectRate: selectRate.rawValue)
+    }
+    
+    // 回调 通知当前状态更改
     private func notifyUpdate() {
         NotificationCenter.default.post(
             name: Notification.Name("CoreTelephonyUpdated"),

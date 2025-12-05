@@ -1,6 +1,6 @@
 import Foundation
 
-enum DataRates: NSNumber {
+enum DataRates: Int64 {
     case _2G = 1
     case _3G = 2
     case _4G = 3

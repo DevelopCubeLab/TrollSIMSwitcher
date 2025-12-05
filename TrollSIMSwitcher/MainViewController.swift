@@ -11,6 +11,9 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                                   NSLocalizedString("ShowSlotLabel", comment: ""),
                                   NSLocalizedString("ShowOperatorName", comment: ""),
                                   NSLocalizedString("ShowPhoneNumber", comment: "")],
+                                 [NSLocalizedString("HomeScreenQuickActions", comment: ""),
+                                  NSLocalizedString("ExitAfterQuickSwitching", comment: "")],
+//                                 [],
                                  [NSLocalizedString("Version", comment: ""), "GitHub"]]
     
     private var SIMSlotList: [SIMSlot] = []
@@ -80,6 +83,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             // 筛选掉未启用的卡槽信息
             SIMSlotList = SIMSlotList.filter { $0.isEnabled }
         }
+        // 设置快捷方式
+        SettingsUtils.instance.setHomeScreenQuickActions(application: UIApplication.shared)
     }
 
     // MARK: - 设置总分组数量
@@ -110,6 +115,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         } else if section == 2 {
             return NSLocalizedString("Options", comment: "")
         } else if section == 3 {
+            return NSLocalizedString("Shortcuts", comment: "")
+        } else if section == 4 {
             return NSLocalizedString("About", comment: "")
         }
         return nil
@@ -205,9 +212,26 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             cell.accessoryView = switchView
             cell.selectionStyle = .none
             
-        }
-        
-        if indexPath.section == 3 { // 关于
+        } else if indexPath.section == 3 { // 快捷方式
+            cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
+            cell.textLabel?.numberOfLines = 0 // 允许换行
+            let switchView = UISwitch(frame: .zero)
+            if indexPath.row == 0 { // 桌面快捷方式
+                switchView.tag = 4 // 设置识别id
+                switchView.isOn = SettingsUtils.instance.getEnableHomeScreenQuickActions() // 从配置文件中获取状态
+            } else if indexPath.row == 1 { // 快速切换后自动退出应用程序
+                switchView.tag = 5 // 设置识别id
+                switchView.isOn = SettingsUtils.instance.getExitAfterQuickSwitching() // 从配置文件中获取状态
+            }
+            // 开光状态改变的回调
+            switchView.addAction(UIAction { [weak self] action in
+                self?.onSwitchChanged(action.sender as! UISwitch)
+            }, for: .valueChanged)
+            cell.accessoryView = switchView
+            cell.selectionStyle = .none
+//        } else if indexPath.section == 4 { // 通知设置
+            //
+        } else if indexPath.section == 4 { // 关于
             if indexPath.row == 0 {
                 cell = UITableViewCell(style: .value1, reuseIdentifier: "cell")
                 cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
@@ -236,14 +260,14 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         tableView.deselectRow(at: indexPath, animated: true)
         
         if indexPath.section == 0 { // 切换数据流量卡
-            if CoreTelephonyController.instance.setDataSlot(slot: SIMSlotList[indexPath.row]) {
+            if CoreTelephonyController.instance.setDataSlot(SIMSlot: SIMSlotList[indexPath.row]) {
                 // 没有回调
             }
         } else if indexPath.section == 1 { // 切换网络类型
             
             if let preferred = SIMSlotList.first(where: { $0.isDataPreferred }) { // 获取首选数据卡
                 let selectRate = preferred.supportedRates?.rates[indexPath.row]
-                if CoreTelephonyController.instance.setDataRate(slot: SIMSlotList.first(where: { $0.isDataPreferred })!, selectRate: selectRate as! Int64) {
+                if CoreTelephonyController.instance.setDataRate(SIMSlot: SIMSlotList.first(where: { $0.isDataPreferred })!, selectRate: selectRate as! Int64) {
                     // 取消之前的选择 因为等待数据刷新大概需要1秒，会导致操作不连贯，不符合直觉，所以先在UI操作下，等待系统自动刷新数据
                     if let indices = preferred.supportedRates?.rates.indices {
                         for i in indices {
@@ -255,7 +279,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 }
             }
 
-        } else if indexPath.section == 3 { // 关于
+        } else if indexPath.section == 4 { // 关于
             if indexPath.row == 1 {
                 if let url = URL(string: "https://github.com/DevelopCubeLab/TrollSIMSwitcher") {
                     UIApplication.shared.open(url, options: [:], completionHandler: nil)
@@ -276,6 +300,12 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         } else if sender.tag == 3 {
             SettingsUtils.instance.setShowPhoneNumber(enable: sender.isOn)
             tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
+        } else if sender.tag == 4 {
+            SettingsUtils.instance.setEnableHomeScreenQuickActions(enable: sender.isOn)
+            // 设置快捷方式
+            SettingsUtils.instance.setHomeScreenQuickActions(application: UIApplication.shared)
+        } else if sender.tag == 5 {
+            SettingsUtils.instance.setExitAfterQuickSwitching(enable: sender.isOn)
         }
     }
 
