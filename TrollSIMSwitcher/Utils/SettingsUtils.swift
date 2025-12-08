@@ -133,27 +133,28 @@ class SettingsUtils {
                 application.shortcutItems = []
                 return
             }
-            if SIMSlotList.count > 1 { // 解决下iPad没启用蜂窝数据的时候什么都不显示的情况
-                // 筛选掉未启用的卡槽信息
+            if SIMSlotList.count > 1 { // 筛选掉未启用的卡槽信息
                 SIMSlotList = SIMSlotList.filter { $0.isEnabled }
             }
+            
             if SIMSlotList.count > 1 { // 双卡模式下才增加切换卡槽的选项
-                shortcutItems.append(
-                    UIApplicationShortcutItem(
-                        type: SettingsUtils.SwitchToSlot1ID,
-                        localizedTitle: String.localizedStringWithFormat(NSLocalizedString("SwitchTo", comment: ""), String.localizedStringWithFormat(NSLocalizedString("SlotNumber", comment: ""), 1)),
-                        localizedSubtitle: nil,
-                        icon: UIApplicationShortcutIcon(systemImageName: "simcard"),
-                        userInfo: nil
-                    ))
-                shortcutItems.append(
-                    UIApplicationShortcutItem(
-                        type: SettingsUtils.SwitchToSlot2ID,
-                        localizedTitle: String.localizedStringWithFormat(NSLocalizedString("SwitchTo", comment: ""), String.localizedStringWithFormat(NSLocalizedString("SlotNumber", comment: ""), 2)),
-                        localizedSubtitle: nil,
-                        icon: UIApplicationShortcutIcon(systemImageName: "simcard.2"),
-                        userInfo: nil
-                    ))
+                for slot in SIMSlotList {
+                    let titleText: String
+                    if getShowSlotLabel() {
+                        titleText = String.localizedStringWithFormat(NSLocalizedString("SwitchTo", comment: ""), slot.label)
+                    } else {
+                        titleText = String.localizedStringWithFormat(NSLocalizedString("SwitchTo", comment: ""), String.localizedStringWithFormat(NSLocalizedString("SlotNumber", comment: ""), slot.slot))
+                    }
+                    shortcutItems.append(
+                        UIApplicationShortcutItem(
+                            type: slot.slot == 1 ? SettingsUtils.SwitchToSlot1ID : SettingsUtils.SwitchToSlot2ID,
+                            localizedTitle: titleText,
+                            localizedSubtitle: nil,
+                            icon: UIApplicationShortcutIcon(systemImageName: slot.slot == 1 ? "simcard" : "simcard.2"),
+                            userInfo: nil
+                        )
+                    )
+                }
             }
             // 切换网络类型的判断
             
