@@ -72,6 +72,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 } else {
                     UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
                 }
+            case "TrollSIMSwitcherToggleSlot": // 切换到另一个卡槽
+                if CoreTelephonyController.instance.toggleDataSlot() {
+                    UIUtils.exitApplicationAfterSwitching()
+                } else {
+                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
+                }
+            case "TrollSIMSwitcherToggleNetworkType": // 自动切换4G/5G
+                if CoreTelephonyController.instance.toggleDataPreferredRate() {
+                    UIUtils.exitApplicationAfterSwitching()
+                } else {
+                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
+                }
             case "TrollSIMSwitcher4G", SettingsUtils.SwitchTo4GID:    // 切换到4G
                 if CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._4G){
                     UIUtils.exitApplicationAfterSwitching()

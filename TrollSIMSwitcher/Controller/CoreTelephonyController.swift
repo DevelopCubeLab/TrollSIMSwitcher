@@ -45,6 +45,14 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         return coreTelephonyClient!.getMaxDataRate(getDataPreferredContext(), error: nil)
     }
     
+    // 获取当前首选卡槽支持的网络类型
+    func getDataPreferredSlotSupportRates() -> [Int64] {
+        if let supportedDataRates = coreTelephonyClient!.getSupportedDataRates(getDataPreferredContext(), error: nil) {
+            return supportedDataRates.rates as! [Int64]
+        }
+        return []
+    }
+    
     // 获取所有SIM卡卡槽信息
     func getAllSIMSlots() -> [SIMSlot] {
         var slots: [SIMSlot] = []
@@ -100,10 +108,6 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
     
     // 切换卡槽流量
     func setDataSlot(SIMSlot: SIMSlot) -> Bool {
-        
-//        if slot.isDataPreferred { // 已经是首选的数据流量卡了就不要去切换了
-//            return true
-//        }
         return setDataSlot(slot: SIMSlot.slot)
     }
     
@@ -128,11 +132,23 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         return false
     }
     
+    // 将流量卡切换到另一个卡槽
+    func toggleDataSlot() -> Bool {
+        // 如果只有一个启用的卡，那不需要切换
+        if getAllSIMSlots().filter({ $0.isEnabled }).count < 2 {
+            return false
+        }
+        // 获取当前的卡槽，设定到另一个卡槽
+        let controlSlot = getDataPreferredSlotID() == 1 ? 2 : 1
+        return setDataSlot(slot: controlSlot)
+    }
+    
     // 切换网络类型
     func setDataRate(SIMSlot: SIMSlot, selectRate: Int64) -> Bool {
         return setDataRate(slot: SIMSlot.slot, selectRate: selectRate)
     }
     
+    // 切换指定卡槽的网络类型
     func setDataRate(slot: Int, selectRate: Int64) -> Bool {
         if let context = getServiceSubscriptionContext(slot: slot) {
             if let result = coreTelephonyClient!.setMaxDataRate(context, rate: selectRate) { // 这个私有方法只有错误的时候才会返回结果
@@ -160,6 +176,24 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
     
     func setDataPreferredRate(selectRate: DataRates) -> Bool {
         return setDataPreferredRate(selectRate: selectRate.rawValue)
+    }
+    
+    // 切换当前选择的卡的数据类型 例如4G 5G之间切换
+    func toggleDataPreferredRate() -> Bool {
+        var supportRates = getDataPreferredSlotSupportRates()
+        
+        if supportRates.count < 1 { // 没有获取到网络支持列表，直接返回失败
+            return false
+        }
+        
+        if supportRates.count == 1 { // 只支持一种网络类型，直接不需要切换，返回成功
+            return true
+        }
+        
+        // 排序一下最高的支持网络类型
+        supportRates = supportRates.sorted()
+        // 设置网络类型，如果是最高支持就切换到第二支持，如果第二支持就切换到最高支持
+        return setDataPreferredRate(selectRate: getDataPreferredSlotRate() == supportRates.last! ? supportRates[supportRates.count - 2] : supportRates.last!)
     }
     
     // 回调 通知当前状态更改

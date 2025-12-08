@@ -195,7 +195,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                     switchView.isEnabled = false // 禁用开关
                 }
             } else if indexPath.row == 1 { // 显示卡槽标签
-                if UIDevice.current.userInterfaceIdiom == .pad {
+                if UIDevice.current.userInterfaceIdiom == .pad { // 这里其实可以被插件绕过，不过其实也无所谓
                     cell.textLabel?.textColor = .lightGray //文本变成灰色
                     switchView.isEnabled = false // 禁用开关
                 }
@@ -306,6 +306,21 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             SettingsUtils.instance.setHomeScreenQuickActions(application: UIApplication.shared)
         } else if sender.tag == 5 {
             SettingsUtils.instance.setExitAfterQuickSwitching(enable: sender.isOn)
+        }
+    }
+    
+    private func onClickToNotificationSettings() {
+        // iOS 16+ 有官方通知设置跳转
+        if #available(iOS 16.0, *) {
+            if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                return
+            }
+        } else {
+            // iOS 15 以及更早靠 openSettingsURLString 跳转到 App 设置页
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            }
         }
     }
 

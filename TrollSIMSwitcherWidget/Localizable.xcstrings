@@ -102,6 +102,38 @@
           }
         }
       }
+    },
+    "ToggleCellularNetworkType" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle Cellular Network Type(e.g. switching between 4G and 5G)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换蜂窝网络类型（例如在4G与5G之间切换）"
+          }
+        }
+      }
+    },
+    "ToggleSlot" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch to another slot"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换至另一个卡槽"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

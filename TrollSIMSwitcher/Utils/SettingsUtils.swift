@@ -49,14 +49,14 @@ class SettingsUtils {
     
     /// 获取是否显示卡槽标签
     func getShowSlotLabel() -> Bool {
-        if UIDevice.current.userInterfaceIdiom == .pad {
+        if UIDevice.current.userInterfaceIdiom == .pad { // 这里其实可以被插件绕过，不过其实也无所谓
             return false
         }
         return plistManager.getBool(key: "ShowSlotLabel", defaultValue: true)
     }
     
     func setShowSlotLabel(enable: Bool) {
-        if UIDevice.current.userInterfaceIdiom == .pad { // 防止iPad用户修改配置文件绕过限制
+        if UIDevice.current.userInterfaceIdiom == .pad { // 防止iPad用户修改配置文件绕过限制，但是其实可以被插件绕过，不过其实也无所谓
             return
         }
         plistManager.setBool(key: "ShowSlotLabel", value: enable)

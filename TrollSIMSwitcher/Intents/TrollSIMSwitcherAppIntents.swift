@@ -29,6 +29,19 @@ struct TrollSIMSwitcherSlot2Intent: AppIntent {
     }
 }
 
+// 切换数据流量至另一个卡槽
+@available(iOS 16, *)
+struct TrollSIMSwitcherToggleSlotIntent: AppIntent {
+    static var title: LocalizedStringResource = "SwitchDataSIM"
+
+    static var resultType: Bool.Type { Bool.self }
+    
+    func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
+        let result = CoreTelephonyController.instance.toggleDataSlot()
+        return .result(value: result)
+    }
+}
+
 // 切换网络类型至4G
 @available(iOS 16, *)
 struct TrollSIMSwitcherNetwork4GIntent: AppIntent {
@@ -53,6 +66,20 @@ struct TrollSIMSwitcherNetwork5GIntent: AppIntent {
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
         let result = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._5G)
+        return .result(value: result)
+    }
+}
+
+// 切换数据流量至另一个卡槽
+@available(iOS 16, *)
+struct TrollSIMSwitcherToggleNetworkTypeIntent: AppIntent {
+    static var title: LocalizedStringResource = "SwitchCellularNetworkMode"
+    static var description = IntentDescription("SwitchCellularNetworkModeDescription")
+
+    static var resultType: Bool.Type { Bool.self }
+    
+    func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
+        let result = CoreTelephonyController.instance.toggleDataPreferredRate()
         return .result(value: result)
     }
 }

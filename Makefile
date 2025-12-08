@@ -25,6 +25,7 @@ before-package::
 	fi
 	@echo -e "\033[32mRemoving _CodeSignature folder..."
 	@rm -rf $(THEOS_STAGING_DIR)/Applications/$(XCODEPROJ_NAME).app/_CodeSignature
+	@rm -rf $(THEOS_STAGING_DIR)/Applications/$(XCODEPROJ_NAME).app/PlugIns/TrollSIMSwitcherWidgetExtension.appex/_CodeSignature
 	@echo -e "\033[32mRemoving Frameworks folder..."
 	@rm -rf $(THEOS_STAGING_DIR)/Applications/$(XCODEPROJ_NAME).app/Frameworks
 	

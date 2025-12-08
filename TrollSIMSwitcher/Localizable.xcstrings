@@ -97,6 +97,23 @@
         }
       }
     },
+    "DisableAllNotifications" : {
+      "comment" : "禁用全部通知",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disable All Notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "禁用全部通知"
+          }
+        }
+      }
+    },
     "EmergencyOnly" : {
       "localizations" : {
         "en" : {
@@ -349,6 +366,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "切换蜂窝数据至卡2"
+          }
+        }
+      }
+    },
+    "SwitchCellularNetworkMode" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch Cellular Network Mode"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换蜂窝网络模式"
+          }
+        }
+      }
+    },
+    "SwitchCellularNetworkModeDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatically switches between the highest available cellular network modes, such as 4G and 5G, based on your SIM’s supported network capabilities."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "根据当前 SIM 卡支持的网络能力，在可用的最高网络模式之间自动切换，例如在 4G 与 5G之间切换。"
+          }
+        }
+      }
+    },
+    "SwitchDataSIM" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch Data SIM"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换数据卡槽"
           }
         }
       }
