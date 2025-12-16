@@ -133,6 +133,9 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
 //            return text
         
 //        }
+        if section == 0 {
+            return String(describing: CoreTelephonyController.instance.getCellularPlans())
+        }
 #endif
         if section == 2 {
             return String.localizedStringWithFormat(NSLocalizedString("EnableCompatibilityModeMessage", comment: ""), NSLocalizedString("CompatibilitySwitchMode", comment: ""))
@@ -293,6 +296,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             SettingsUtils.instance.setEnableCompatibilitySwitchMode(enable: sender.isOn)
         } else if sender.tag == 1 {
             SettingsUtils.instance.setShowSlotLabel(enable: sender.isOn)
+            // 设置快捷方式
+            SettingsUtils.instance.setHomeScreenQuickActions(application: UIApplication.shared)
             tableView.reloadSections(IndexSet(integer: 0), with: .none)
         } else if sender.tag == 2 {
             SettingsUtils.instance.setShowOperatorName(enable: sender.isOn)

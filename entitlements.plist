@@ -18,6 +18,7 @@
 	<array>
 		<string>spi</string>
     	<string>preferences-write</string>
+		<string>cellular-plan</string>
 	</array>
 	<key>com.apple.private.MobileGestalt.AllowedProtectedKeys</key>
 	<array>

@@ -9,6 +9,7 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
     //CoreTelephonyClient 实例
     private let coreTelephonyClient = CoreTelephonyClient()
     private let networkInfo = CTTelephonyNetworkInfo()
+    private let cellularPlanManager = CTCellularPlanManager.shared()
     
     private var IMEIs: [IMEI] = []
     
@@ -51,6 +52,28 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
             return supportedDataRates.rates as! [Int64]
         }
         return []
+    }
+    
+    // 获取全部数据流量卡
+    func getCellularPlans() -> [CTCellularPlanItem] {
+        var plans: [CTCellularPlanItem] = []
+        let sema = DispatchSemaphore(value: 0) // 创建一个信号量为 0 的锁
+
+        cellularPlanManager?.planItems { items in
+            plans = items ?? []
+            sema.signal() // 继续线程
+        }
+
+        sema.wait() // 挂起线程
+        
+        for plan in plans {
+            NSLog("[TrollSIMSwitcher] -----> \(type(of: cellularPlanManager?.getSubscriptionContextUUIDforPlan(plan)))")
+            NSLog("[TrollSIMSwitcher] -----> \(String(describing: cellularPlanManager?.getSubscriptionContextUUIDforPlan(plan))))")
+        }
+        
+        NSLog("[TrollSIMSwitcher] CTCellularPlanItems: \(String(describing: plans))")
+        return plans
+        
     }
     
     // 获取所有SIM卡卡槽信息
