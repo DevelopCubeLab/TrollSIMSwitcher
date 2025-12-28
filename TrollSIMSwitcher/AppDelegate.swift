@@ -16,6 +16,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         // 设置通知代理
         UNUserNotificationCenter.current().delegate = self
+        // 注册通知分类
+        NotificationController.instance.setupNotificationCategories()
         
         window = UIWindow(frame: UIScreen.main.bounds)
         window!.rootViewController = UINavigationController(rootViewController: MainViewController())
@@ -112,6 +114,81 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             }
         }
         
+    }
+    
+    // MARK: 前台也显示通知（横幅/列表），没有声音就不会响
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler(NotificationController.instance.presentationOptions(for: notification))
+    }
+
+    // MARK: 点击通知的回调
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        
+        let request = response.notification.request
+        let userInfo = request.content.userInfo
+
+        let systemActionID = response.actionIdentifier
+        let groupID = userInfo["group"] as? String
+        let actionID = userInfo["action"] as? String
+
+        switch systemActionID {
+        
+        case UNNotificationDefaultActionIdentifier: // 用户点击通知本体
+
+            switch actionID {
+            case NotificationController.switchToSlot1Identifier:
+                if CoreTelephonyController.instance.setDataSlot(slot: 1) {
+                    // 判断是否退出app
+                    UIUtils.exitApplicationAfterSwitching()
+                }
+            case NotificationController.switchToSlot2Identifier:
+                if CoreTelephonyController.instance.setDataSlot(slot: 2) {
+                    UIUtils.exitApplicationAfterSwitching()
+                }
+            case NotificationController.switch3GIdentifier:
+                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: DataRates._3G) {
+                    UIUtils.exitApplicationAfterSwitching()
+                }
+            case NotificationController.switch4GIdentifier:
+                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: DataRates._4G) {
+                    UIUtils.exitApplicationAfterSwitching()
+                }
+            case NotificationController.switch5GIdentifier:
+                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: DataRates._5G) {
+                    UIUtils.exitApplicationAfterSwitching()
+                }
+            default: break
+            }
+            // 补发通知
+            NotificationController.instance.sendNotifications(silentNotifications: true, groupIdentifier: groupID)
+            
+        case NotificationController.disableThisGroupNotificationsActionID: // 禁用当前的分组通知
+            if let groupID {
+                if groupID == NotificationController.switchSlotGroupIdentifier { // 关闭切换蜂窝网络的通知
+                    SettingsUtils.instance.setEnableToggleCellularDataSlotNotifications(enable: false)
+                } else if groupID == NotificationController.switchNetworkTypeGroupIdentifier { // 关闭切换蜂窝类型的通知
+                    SettingsUtils.instance.setEnableToggleNetworkTypeNotifications(enable: false)
+                }
+            }
+
+        case NotificationController.disableAllNotificationsActionID: // 禁用全部通知
+            // 关闭通知
+            SettingsUtils.instance.setEnableNotifications(enable: false)
+            // 删除全部通知
+            NotificationController.instance.clearAllNotifications()
+
+        case UNNotificationDismissActionIdentifier: // 用户划掉通知
+            break
+
+        default:
+            break
+        }
+        
+        completionHandler()
     }
     
 }

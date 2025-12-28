@@ -106,6 +106,16 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         return slots
     }
     
+    // 获取全部已经启用的卡槽信息
+    func getAllEnabledSlots() -> [SIMSlot] {
+        var SIMSlotList = CoreTelephonyController.instance.getAllSIMSlots()
+        if SIMSlotList.count > 1 { // 解决下iPad没启用蜂窝数据的时候什么都不显示的情况
+            // 筛选掉未启用的卡槽信息
+            SIMSlotList = SIMSlotList.filter { $0.isEnabled }
+        }
+        return SIMSlotList
+    }
+    
     // 切换卡槽流量
     func setDataSlot(SIMSlot: SIMSlot) -> Bool {
         return setDataSlot(slot: SIMSlot.slot)

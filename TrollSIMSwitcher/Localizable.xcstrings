@@ -114,6 +114,23 @@
         }
       }
     },
+    "DisableThisGroupNotifications" : {
+      "comment" : "禁用本组通知",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disable This Group Notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "禁用本组通知"
+          }
+        }
+      }
+    },
     "EmergencyOnly" : {
       "localizations" : {
         "en" : {
@@ -126,6 +143,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "仅限紧急呼叫"
+          }
+        }
+      }
+    },
+    "Enable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用"
           }
         }
       }
@@ -194,6 +227,22 @@
         }
       }
     },
+    "GoToNotificationSettings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go to Notification Settings"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳转到通知设置"
+          }
+        }
+      }
+    },
     "HomeScreenQuickActions" : {
       "localizations" : {
         "en" : {
@@ -226,6 +275,22 @@
         }
       }
     },
+    "NoNotificationEnabledMessage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No notification types have been enabled. Please select a type of notification and enable it before sending the notification."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未开启任何通知类型，请选择一个类型的通知并且开启后再发送通知"
+          }
+        }
+      }
+    },
     "NoService" : {
       "localizations" : {
         "en" : {
@@ -242,6 +307,56 @@
         }
       }
     },
+    "Notifications" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知"
+          }
+        }
+      }
+    },
+    "NotificationsPermissionDenied" : {
+      "comment" : "通知权限已拒绝",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications Permission Denied"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知权限被拒绝"
+          }
+        }
+      }
+    },
+    "NotificationsPermissionGoToSettings" : {
+      "comment" : "通知权限已拒绝",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notification permissions have been turned off, please go to system settings to enable notification permissions."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知权限已被关闭，请到系统设置中开启通知权限"
+          }
+        }
+      }
+    },
     "Options" : {
       "localizations" : {
         "en" : {
@@ -254,6 +369,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "选项"
+          }
+        }
+      }
+    },
+    "SendNotifications" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发送通知"
           }
         }
       }
@@ -434,6 +565,22 @@
         }
       }
     },
+    "SwitchFromTo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch %@ to %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换%@至%@"
+          }
+        }
+      }
+    },
     "SwitchNetworkTypeTo4G" : {
       "localizations" : {
         "en" : {
@@ -478,6 +625,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "切换至%@"
+          }
+        }
+      }
+    },
+    "ToggleCellularDataSlotNotifications" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle Cellular Data Slot Notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换数据卡槽通知"
+          }
+        }
+      }
+    },
+    "ToggleNetworkTypeNotifications" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle Network Type Notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换网络类型通知"
           }
         }
       }
