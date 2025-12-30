@@ -373,6 +373,23 @@
         }
       }
     },
+    "SendNotificationMessage" : {
+      "comment" : "发送通知成功",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notification sent successfully, open the notification center to view"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发送通知成功，打开通知中心即可查看"
+          }
+        }
+      }
+    },
     "SendNotifications" : {
       "localizations" : {
         "en" : {

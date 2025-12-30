@@ -312,7 +312,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         if indexPath.section == 0 { // 切换数据流量卡
             if CoreTelephonyController.instance.setDataSlot(SIMSlot: SIMSlotList[indexPath.row]) {
-                // 没有回调
+                // 补发通知
+                NotificationController.instance.sendNotifications(silentNotifications: true, groupIdentifier: NotificationController.switchSlotGroupIdentifier)
             }
         } else if indexPath.section == 1 { // 切换网络类型
             
@@ -327,6 +328,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                     }
                     // 选择当前的网络类型
                     tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+                    // 补发普通通知
+                    NotificationController.instance.sendNotifications(silentNotifications: true)
                 }
             }
 
@@ -358,6 +361,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             SettingsUtils.instance.setShowSlotLabel(enable: sender.isOn)
             // 设置快捷方式
             SettingsUtils.instance.setHomeScreenQuickActions(application: UIApplication.shared)
+            // 补发普通通知
+            NotificationController.instance.sendNotifications(silentNotifications: true)
             tableView.reloadSections(IndexSet(integer: 0), with: .none)
         } else if sender.tag == SettingsSwitchViewTag.ShowOperatorName.rawValue {
             SettingsUtils.instance.setShowOperatorName(enable: sender.isOn)
@@ -470,6 +475,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             UIUtils.showAlert(message: NSLocalizedString("NoNotificationEnabledMessage", comment: ""), in: self)
             return
         }
+        // 显示提示
+        UIUtils.showAlert(message: NSLocalizedString("SendNotificationMessage", comment: "发送通知成功"), in: self)
         // 发送通知
         NotificationController.instance.sendNotifications(silentNotifications: false)
         

@@ -61,56 +61,55 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     private func handleQuickAction(itemID: String) {
         
         if let viewController = window?.rootViewController { //获取当前的View Controller
+            var switchSlot: Bool = false
+            var switchSuccessful: Bool = true
+            
             switch itemID {
             case "TrollSIMSwitcherSlot1", SettingsUtils.SwitchToSlot1ID: // 切换到卡槽1
                 if CoreTelephonyController.instance.setDataSlot(slot: 1) {
-                    UIUtils.exitApplicationAfterSwitching()
+                    switchSlot = true
+                    switchSuccessful = true
                 } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
+                    switchSuccessful = false
                 }
             case "TrollSIMSwitcherSlot2", SettingsUtils.SwitchToSlot2ID: // 切换到卡槽2
                 if CoreTelephonyController.instance.setDataSlot(slot: 2) {
-                    UIUtils.exitApplicationAfterSwitching()
+                    switchSlot = true
+                    switchSuccessful = true
                 } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
+                    switchSuccessful = false
                 }
             case "TrollSIMSwitcherToggleSlot": // 切换到另一个卡槽
                 if CoreTelephonyController.instance.toggleDataSlot() {
-                    UIUtils.exitApplicationAfterSwitching()
+                    switchSlot = true
+                    switchSuccessful = true
                 } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
+                    switchSuccessful = false
                 }
             case "TrollSIMSwitcherToggleNetworkType": // 自动切换4G/5G
-                if CoreTelephonyController.instance.toggleDataPreferredRate() {
-                    UIUtils.exitApplicationAfterSwitching()
-                } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
-                }
+                switchSuccessful = CoreTelephonyController.instance.toggleDataPreferredRate()
             case "TrollSIMSwitcher4G", SettingsUtils.SwitchTo4GID:    // 切换到4G
-                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._4G){
-                    UIUtils.exitApplicationAfterSwitching()
-                } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
-                }
+                switchSuccessful = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._4G)
             case "TrollSIMSwitcher5G", SettingsUtils.SwitchTo5GID:    // 切换到5G
-                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._5G){
-                    UIUtils.exitApplicationAfterSwitching()
-                } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
-                }
+                switchSuccessful = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._5G)
             case SettingsUtils.SwitchTo2GID: // 切换到2G
-                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._2G){
-                    UIUtils.exitApplicationAfterSwitching()
-                } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
-                }
+                switchSuccessful = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._2G)
             case SettingsUtils.SwitchTo3GID: // 切换到3G
-                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._3G){
-                    UIUtils.exitApplicationAfterSwitching()
-                } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
-                }
+                switchSuccessful = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._3G)
+
             default: return
+            }
+            
+            if switchSlot { // 补发通知
+                NotificationController.instance.sendNotifications(silentNotifications: true, groupIdentifier: NotificationController.switchSlotGroupIdentifier)
+            } else {
+                // 补发普通通知
+                NotificationController.instance.sendNotifications(silentNotifications: true)
+            }
+            if switchSuccessful {
+                UIUtils.exitApplicationAfterSwitching()
+            } else {
+                UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
             }
         }
         

@@ -72,7 +72,7 @@ class NotificationController {
     }
     
     func setupNotificationCategories() {
-        // 关闭全部通知
+        // 关闭本组通知
         let disableThisGroupNotificationsAction = UNNotificationAction(
             identifier: Self.disableThisGroupNotificationsActionID,
             title: NSLocalizedString("DisableThisGroupNotifications", comment: "禁用本组通知"),
@@ -171,17 +171,8 @@ class NotificationController {
     }
 
     // MARK: - 前台展示策略（供 AppDelegate 复用）
-    /// 回补通知只进列表，其余正常（横幅+列表）
     func presentationOptions(for notification: UNNotification) -> UNNotificationPresentationOptions {
-        if #available(iOS 14.0, *) {
-            if notification.request.identifier == NotificationController.switch3GIdentifier {
-                return [.list]
-            } else {
-                return [.banner, .list]
-            }
-        } else {
-            return [.alert]
-        }
+        return [.list]
     }
     
     // 清除全部通知
@@ -211,7 +202,7 @@ class NotificationController {
         
         // 发送切换卡槽的通知
         if SettingsUtils.instance.getEnableToggleCellularDataSlotNotifications() {
-            if let notPreferred = SIMSlotList.first(where: {
+            if let slot = SIMSlotList.first(where: {
                 if let groupID = groupIdentifier {
                     if groupID == NotificationController.switchSlotGroupIdentifier {
                         return $0.isDataPreferred // 如果是切换数据流量卡 那就选择当前的卡，因为基带还没刷新
@@ -223,12 +214,12 @@ class NotificationController {
             }) { // 获取非首选数据卡
                 let titleText: String
                 if SettingsUtils.instance.getShowSlotLabel() {
-                    titleText = String.localizedStringWithFormat(NSLocalizedString("SwitchFromTo", comment: ""), NSLocalizedString("CellularData", comment: ""), notPreferred.label)
+                    titleText = String.localizedStringWithFormat(NSLocalizedString("SwitchFromTo", comment: ""), NSLocalizedString("CellularData", comment: ""), slot.label)
                 } else {
-                    titleText = String.localizedStringWithFormat(NSLocalizedString("SwitchFromTo", comment: ""), NSLocalizedString("CellularData", comment: ""), String.localizedStringWithFormat(NSLocalizedString("SlotNumber", comment: ""), notPreferred.slot))
+                    titleText = String.localizedStringWithFormat(NSLocalizedString("SwitchFromTo", comment: ""), NSLocalizedString("CellularData", comment: ""), String.localizedStringWithFormat(NSLocalizedString("SlotNumber", comment: ""), slot.slot))
                 }
                 // 发送通知
-               postNotification(title: titleText, groupIdentifier: NotificationController.switchSlotGroupIdentifier, actionIdentifier: notPreferred.slot == 1 ? NotificationController.switchToSlot1Identifier : NotificationController.switchToSlot2Identifier, style: postStyle)
+               postNotification(title: titleText, groupIdentifier: NotificationController.switchSlotGroupIdentifier, actionIdentifier: slot.slot == 1 ? NotificationController.switchToSlot1Identifier : NotificationController.switchToSlot2Identifier, style: postStyle)
             }
         }
         // 发送切换蜂窝数据类型的通知
