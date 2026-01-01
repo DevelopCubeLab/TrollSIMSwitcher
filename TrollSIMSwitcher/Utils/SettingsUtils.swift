@@ -123,6 +123,37 @@ class SettingsUtils {
         plistManager.apply()
     }
     
+    /// 获取是否启用重要通知
+    func getUseCriticalNotifications() -> Bool {
+        return plistManager.getBool(key: "UseCriticalNotifications", defaultValue: false)
+    }
+    
+    func setUseCriticalNotifications(enable: Bool) {
+        plistManager.setBool(key: "UseCriticalNotifications", value: enable)
+        plistManager.apply()
+    }
+    
+    /// 获取是否开启切换蜂窝数据流量卡通知
+    func getEnableToggleCellularDataSlotNotifications() -> Bool {
+        return plistManager.getBool(key: "EnableToggleCellularDataSlotNotifications", defaultValue: false)
+    }
+    
+    func setEnableToggleCellularDataSlotNotifications(enable: Bool) {
+        plistManager.setBool(key: "EnableToggleCellularDataSlotNotifications", value: enable)
+        plistManager.apply()
+    }
+    
+    /// 获取是否开启切换网络类型通知
+    func getEnableToggleNetworkTypeNotifications() -> Bool {
+        return plistManager.getBool(key: "EnableToggleNetworkTypeNotifications", defaultValue: true)
+    }
+    
+    func setEnableToggleNetworkTypeNotifications(enable: Bool) {
+        plistManager.setBool(key: "EnableToggleNetworkTypeNotifications", value: enable)
+        plistManager.apply()
+    }
+    
+    // 设置主屏幕快捷方式
     func setHomeScreenQuickActions(application: UIApplication) {
         if getEnableHomeScreenQuickActions() { // 检查是否开启桌面图标快捷方式
             var shortcutItems: [UIApplicationShortcutItem] = []

@@ -16,6 +16,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         // 设置通知代理
         UNUserNotificationCenter.current().delegate = self
+        // 注册通知分类
+        NotificationController.instance.setupNotificationCategories()
         
         window = UIWindow(frame: UIScreen.main.bounds)
         window!.rootViewController = UINavigationController(rootViewController: MainViewController())
@@ -59,59 +61,133 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     private func handleQuickAction(itemID: String) {
         
         if let viewController = window?.rootViewController { //获取当前的View Controller
+            var switchSlot: Bool = false
+            var switchSuccessful: Bool = true
+            
             switch itemID {
             case "TrollSIMSwitcherSlot1", SettingsUtils.SwitchToSlot1ID: // 切换到卡槽1
                 if CoreTelephonyController.instance.setDataSlot(slot: 1) {
-                    UIUtils.exitApplicationAfterSwitching()
+                    switchSlot = true
+                    switchSuccessful = true
                 } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
+                    switchSuccessful = false
                 }
             case "TrollSIMSwitcherSlot2", SettingsUtils.SwitchToSlot2ID: // 切换到卡槽2
                 if CoreTelephonyController.instance.setDataSlot(slot: 2) {
-                    UIUtils.exitApplicationAfterSwitching()
+                    switchSlot = true
+                    switchSuccessful = true
                 } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
+                    switchSuccessful = false
                 }
             case "TrollSIMSwitcherToggleSlot": // 切换到另一个卡槽
                 if CoreTelephonyController.instance.toggleDataSlot() {
-                    UIUtils.exitApplicationAfterSwitching()
+                    switchSlot = true
+                    switchSuccessful = true
                 } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
+                    switchSuccessful = false
                 }
             case "TrollSIMSwitcherToggleNetworkType": // 自动切换4G/5G
-                if CoreTelephonyController.instance.toggleDataPreferredRate() {
-                    UIUtils.exitApplicationAfterSwitching()
-                } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
-                }
+                switchSuccessful = CoreTelephonyController.instance.toggleDataPreferredRate()
             case "TrollSIMSwitcher4G", SettingsUtils.SwitchTo4GID:    // 切换到4G
-                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._4G){
-                    UIUtils.exitApplicationAfterSwitching()
-                } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
-                }
+                switchSuccessful = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._4G)
             case "TrollSIMSwitcher5G", SettingsUtils.SwitchTo5GID:    // 切换到5G
-                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._5G){
-                    UIUtils.exitApplicationAfterSwitching()
-                } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
-                }
+                switchSuccessful = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._5G)
             case SettingsUtils.SwitchTo2GID: // 切换到2G
-                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._2G){
-                    UIUtils.exitApplicationAfterSwitching()
-                } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
-                }
+                switchSuccessful = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._2G)
             case SettingsUtils.SwitchTo3GID: // 切换到3G
-                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._3G){
-                    UIUtils.exitApplicationAfterSwitching()
-                } else {
-                    UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
-                }
+                switchSuccessful = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._3G)
+
             default: return
+            }
+            
+            if switchSlot { // 补发通知
+                NotificationController.instance.sendNotifications(silentNotifications: true, groupIdentifier: NotificationController.switchSlotGroupIdentifier)
+            } else {
+                // 补发普通通知
+                NotificationController.instance.sendNotifications(silentNotifications: true)
+            }
+            if switchSuccessful {
+                UIUtils.exitApplicationAfterSwitching()
+            } else {
+                UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
             }
         }
         
+    }
+    
+    // MARK: 前台也显示通知（横幅/列表），没有声音就不会响
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler(NotificationController.instance.presentationOptions(for: notification))
+    }
+
+    // MARK: 点击通知的回调
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        
+        let request = response.notification.request
+        let userInfo = request.content.userInfo
+
+        let systemActionID = response.actionIdentifier
+        let groupID = userInfo["group"] as? String
+        let actionID = userInfo["action"] as? String
+
+        switch systemActionID {
+        
+        case UNNotificationDefaultActionIdentifier: // 用户点击通知本体
+
+            switch actionID {
+            case NotificationController.switchToSlot1Identifier:
+                if CoreTelephonyController.instance.setDataSlot(slot: 1) {
+                    // 判断是否退出app
+                    UIUtils.exitApplicationAfterSwitching()
+                }
+            case NotificationController.switchToSlot2Identifier:
+                if CoreTelephonyController.instance.setDataSlot(slot: 2) {
+                    UIUtils.exitApplicationAfterSwitching()
+                }
+            case NotificationController.switch3GIdentifier:
+                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: DataRates._3G) {
+                    UIUtils.exitApplicationAfterSwitching()
+                }
+            case NotificationController.switch4GIdentifier:
+                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: DataRates._4G) {
+                    UIUtils.exitApplicationAfterSwitching()
+                }
+            case NotificationController.switch5GIdentifier:
+                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: DataRates._5G) {
+                    UIUtils.exitApplicationAfterSwitching()
+                }
+            default: break
+            }
+            // 补发通知
+            NotificationController.instance.sendNotifications(silentNotifications: true, groupIdentifier: groupID)
+            
+        case NotificationController.disableThisGroupNotificationsActionID: // 禁用当前的分组通知
+            if let groupID {
+                if groupID == NotificationController.switchSlotGroupIdentifier { // 关闭切换蜂窝网络的通知
+                    SettingsUtils.instance.setEnableToggleCellularDataSlotNotifications(enable: false)
+                } else if groupID == NotificationController.switchNetworkTypeGroupIdentifier { // 关闭切换蜂窝类型的通知
+                    SettingsUtils.instance.setEnableToggleNetworkTypeNotifications(enable: false)
+                }
+            }
+
+        case NotificationController.disableAllNotificationsActionID: // 禁用全部通知
+            // 关闭通知
+            SettingsUtils.instance.setEnableNotifications(enable: false)
+            // 删除全部通知
+            NotificationController.instance.clearAllNotifications()
+
+        case UNNotificationDismissActionIdentifier: // 用户划掉通知
+            break
+
+        default:
+            break
+        }
+        
+        completionHandler()
     }
     
 }

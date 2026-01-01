@@ -12,6 +12,8 @@ struct TrollSIMSwitcherSlot1Intent: AppIntent {
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
         let result = CoreTelephonyController.instance.setDataSlot(slot: 1)
+        // 刷新通知
+        NotificationController.instance.sendNotifications(silentNotifications: true)
         return .result(value: result)
     }
 }
@@ -25,6 +27,8 @@ struct TrollSIMSwitcherSlot2Intent: AppIntent {
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
         let result = CoreTelephonyController.instance.setDataSlot(slot: 2)
+        // 刷新通知
+        NotificationController.instance.sendNotifications(silentNotifications: true)
         return .result(value: result)
     }
 }
@@ -38,6 +42,8 @@ struct TrollSIMSwitcherToggleSlotIntent: AppIntent {
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
         let result = CoreTelephonyController.instance.toggleDataSlot()
+        // 刷新通知
+        NotificationController.instance.sendNotifications(silentNotifications: true)
         return .result(value: result)
     }
 }
@@ -52,6 +58,8 @@ struct TrollSIMSwitcherNetwork4GIntent: AppIntent {
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
         let result = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._4G)
+        // 刷新通知
+        NotificationController.instance.sendNotifications(silentNotifications: true)
         return .result(value: result)
     }
 }
@@ -66,6 +74,8 @@ struct TrollSIMSwitcherNetwork5GIntent: AppIntent {
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
         let result = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._5G)
+        // 刷新通知
+        NotificationController.instance.sendNotifications(silentNotifications: true)
         return .result(value: result)
     }
 }
@@ -80,6 +90,8 @@ struct TrollSIMSwitcherToggleNetworkTypeIntent: AppIntent {
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
         let result = CoreTelephonyController.instance.toggleDataPreferredRate()
+        // 刷新通知
+        NotificationController.instance.sendNotifications(silentNotifications: true)
         return .result(value: result)
     }
 }

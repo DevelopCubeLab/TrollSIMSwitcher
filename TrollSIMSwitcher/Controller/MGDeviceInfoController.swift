@@ -17,10 +17,8 @@ class MGDeviceInfoController {
         let handle = dlopen("/usr/lib/libMobileGestalt.dylib", RTLD_NOW)
         if let sym = dlsym(handle, "MGCopyAnswer") {
             self.mGCopyAnswer = unsafeBitCast(sym, to: MGCopyAnswerFunc.self)
-            NSLog("[MGDeviceInfo] MGCopyAnswer 已加载")
         } else {
             self.mGCopyAnswer = nil
-            NSLog("[MGDeviceInfo] MGCopyAnswer 加载失败")
         }
         getIMEIList()
     }

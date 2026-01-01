@@ -97,6 +97,22 @@
         }
       }
     },
+    "CriticalAlertMessage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Critical Alert Permission Notice\n\nDue to iOS system restrictions, System apps are limited when requesting Critical Alert permissions. When enabling Critical Alerts for the first time, please switch the app to 'User' registration in TrollStore, fully close the app, and then reopen it to complete the permission request.\nAfter authorization is granted, you may switch the app back to 'System' registration.\nThe permission will be preserved by the system, and this process only needs to be completed once."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重要通知权限说明\n\niOS 对 System App 申请重要通知权限存在限制。\n请在首次启用时，在TrollStore 中将 App 切换为'User'状态，并且彻底关闭App再次打开App以完成权限请求，授权成功后可切换为'System'状态，权限将被系统保留，无需重复操作。"
+          }
+        }
+      }
+    },
     "DisableAllNotifications" : {
       "comment" : "禁用全部通知",
       "localizations" : {
@@ -114,6 +130,23 @@
         }
       }
     },
+    "DisableThisGroupNotifications" : {
+      "comment" : "禁用本组通知",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disable This Group Notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "禁用本组通知"
+          }
+        }
+      }
+    },
     "EmergencyOnly" : {
       "localizations" : {
         "en" : {
@@ -126,6 +159,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "仅限紧急呼叫"
+          }
+        }
+      }
+    },
+    "Enable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用"
           }
         }
       }
@@ -194,6 +243,22 @@
         }
       }
     },
+    "GoToNotificationSettings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go to Notification Settings"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳转到通知设置"
+          }
+        }
+      }
+    },
     "HomeScreenQuickActions" : {
       "localizations" : {
         "en" : {
@@ -226,6 +291,22 @@
         }
       }
     },
+    "NoNotificationEnabledMessage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No notification types have been enabled. Please select a type of notification and enable it before sending the notification."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未开启任何通知类型，请选择一个类型的通知并且开启后再发送通知"
+          }
+        }
+      }
+    },
     "NoService" : {
       "localizations" : {
         "en" : {
@@ -242,6 +323,72 @@
         }
       }
     },
+    "Notifications" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知"
+          }
+        }
+      }
+    },
+    "NotificationsFooterMessage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On iOS 16 and later, it is recommended to switch using Lock Screen Widgets for a better experience.\nOn iOS 14, enabling Critical Alerts is strongly recommended to improve usability. Notification will be displayed in silent mode."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建议iOS 16以下用户使用，iOS 16及更高版本系统建议使用锁屏小组件切换，iOS 14用户建议开启重要通知提升使用体验，通知将以静音模式显示"
+          }
+        }
+      }
+    },
+    "NotificationsPermissionDenied" : {
+      "comment" : "通知权限已拒绝",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications Permission Denied"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知权限被拒绝"
+          }
+        }
+      }
+    },
+    "NotificationsPermissionGoToSettings" : {
+      "comment" : "通知权限已拒绝",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notification permissions have been turned off, please go to system settings to enable notification permissions."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知权限已被关闭，请到系统设置中开启通知权限"
+          }
+        }
+      }
+    },
     "Options" : {
       "localizations" : {
         "en" : {
@@ -254,6 +401,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "选项"
+          }
+        }
+      }
+    },
+    "SendNotificationMessage" : {
+      "comment" : "发送通知成功",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notification sent successfully, open the notification center to view"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发送通知成功，打开通知中心即可查看"
+          }
+        }
+      }
+    },
+    "SendNotifications" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发送通知"
           }
         }
       }
@@ -434,6 +614,22 @@
         }
       }
     },
+    "SwitchFromTo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch %@ to %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换%@至%@"
+          }
+        }
+      }
+    },
     "SwitchNetworkTypeTo4G" : {
       "localizations" : {
         "en" : {
@@ -482,6 +678,38 @@
         }
       }
     },
+    "ToggleCellularDataSlotNotifications" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle Cellular Data Slot Notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换数据卡槽通知"
+          }
+        }
+      }
+    },
+    "ToggleNetworkTypeNotifications" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle Network Type Notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换网络类型通知"
+          }
+        }
+      }
+    },
     "Unknown" : {
       "comment" : "未知",
       "localizations" : {
@@ -495,6 +723,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未知"
+          }
+        }
+      }
+    },
+    "UseCriticalNotifications" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use Critical Notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用重要通知"
           }
         }
       }
