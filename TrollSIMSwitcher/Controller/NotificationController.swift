@@ -56,12 +56,13 @@ class NotificationController {
 
     // MARK: - 申请权限
     func requestAuthorization(completion: @escaping (Bool) -> Void) {
+        
         if #available(iOS 15.0, *) { // 大于等于iOS 15需要申请timeSensitive 来获得更好的体验
-            center.requestAuthorization(options: [.alert, .sound, .badge, .timeSensitive]) { granted, _ in
+            center.requestAuthorization(options: [.alert, .sound, .badge, .timeSensitive, .criticalAlert]) { granted, _ in
                 completion(granted)
             }
-        } else {
-            center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+        } else { // 只申请普通通知权限和重要提醒的权限
+            center.requestAuthorization(options: [.alert, .sound, .badge, .criticalAlert]) { granted, _ in
                 completion(granted)
             }
         }
@@ -94,6 +95,13 @@ class NotificationController {
         )
 
         center.setNotificationCategories([category])
+    }
+    
+    // 获取是否已经拿到重要通知权利
+    func isCriticalNotificationEnabled( completion: @escaping (Bool) -> Void) {
+        center.getNotificationSettings { settings in
+            completion(settings.criticalAlertSetting == .enabled)
+        }
     }
 
     // MARK: - 发送：快捷入口（参数化）
@@ -134,11 +142,20 @@ class NotificationController {
                 content.sound = nil
             }
 
-            // 实效性 Time Sensitive（iOS 15+）
-            if #available(iOS 15.0, *),
-               preferTimeSensitive,
-               settings?.timeSensitiveSetting == .enabled {
-                content.interruptionLevel = .timeSensitive
+            // 先判断是否开启紧急通知
+            if SettingsUtils.instance.getUseCriticalNotifications(), settings?.criticalAlertSetting == .enabled {
+                if #available(iOS 15.0, *) {
+                    content.sound = UNNotificationSound.defaultCriticalSound(withAudioVolume: 0.0) // 必须设置这个声音，但是其实是个没有声音的提示，但是这样可以激活重要通知
+                } else {
+                    // 必须设置这个声音，但是其实是个没有声音的提示，但是这样可以激活重要通知 iOS 14可能无法可靠的发送重要通知
+                    content.sound = UNNotificationSound.criticalSoundNamed(UNNotificationSoundName(""), withAudioVolume: 0.0)
+                }
+                
+            } else if #available(iOS 15.0, *) { // 实效性通知 Time Sensitive（iOS 15+）
+                // 再判断是否开启实效性通知
+                if preferTimeSensitive, settings?.timeSensitiveSetting == .enabled {
+                    content.interruptionLevel = .timeSensitive
+                }
             }
 
             // 覆盖同一组通知，防止点击以后还存在别的

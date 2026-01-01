@@ -1,6 +1,6 @@
 Package: com.developlab.trollsimswitcher
 Name: TrollSIMSwitcher
-Version: 1.0
+Version: 1.1
 Architecture: iphoneos-arm
 Description: iOS TrollStore Switch SIM tool
 Maintainer: developlab

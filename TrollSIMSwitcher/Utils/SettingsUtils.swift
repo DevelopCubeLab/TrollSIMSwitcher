@@ -123,6 +123,16 @@ class SettingsUtils {
         plistManager.apply()
     }
     
+    /// 获取是否启用重要通知
+    func getUseCriticalNotifications() -> Bool {
+        return plistManager.getBool(key: "UseCriticalNotifications", defaultValue: false)
+    }
+    
+    func setUseCriticalNotifications(enable: Bool) {
+        plistManager.setBool(key: "UseCriticalNotifications", value: enable)
+        plistManager.apply()
+    }
+    
     /// 获取是否开启切换蜂窝数据流量卡通知
     func getEnableToggleCellularDataSlotNotifications() -> Bool {
         return plistManager.getBool(key: "EnableToggleCellularDataSlotNotifications", defaultValue: false)

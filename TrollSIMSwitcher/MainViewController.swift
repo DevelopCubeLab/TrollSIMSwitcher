@@ -2,7 +2,7 @@ import UIKit
 
 class MainViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    static let versionCode = "1.0"
+    static let versionCode = "1.1"
     
     private var tableView = UITableView()
     
@@ -117,7 +117,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             return NSLocalizedString("Options", comment: "")
         } else if section == 3 {
             return NSLocalizedString("Shortcuts", comment: "")
-        } else if section == 4 {
+        } else if section == MainViewController.notificationsAtSection {
             return NSLocalizedString("Notifications", comment: "")
         } else if section == 5 {
             return NSLocalizedString("About", comment: "")
@@ -127,18 +127,10 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // MARK: - 设置每个分组的底部标题 可以为分组设置尾部文本，如果没有尾部可以返回 nil
     func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-#if DEBUG
-//        if section == 0 {
-//            var text = ""
-//            for slot in SIMSlotList {
-//                text = text.appending(slot.toString()).appending("\n")
-//            }
-//            return text
-        
-//        }
-#endif
         if section == 2 {
             return String.localizedStringWithFormat(NSLocalizedString("EnableCompatibilityModeMessage", comment: ""), NSLocalizedString("CompatibilitySwitchMode", comment: ""))
+        } else if section == MainViewController.notificationsAtSection {
+            return NSLocalizedString("NotificationsFooterMessage", comment: "")
         }
         return nil
     }
@@ -272,7 +264,11 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                         switchView.isEnabled = false // 禁用开关
                     }
                 }
-            } else if indexPath.row == 3 || indexPath.row == 4 {
+            } else if indexPath.row == 3 {
+                // 使用重要通知
+                switchView.tag = SettingsSwitchViewTag.UseCriticalNotifications.rawValue // 设置识别id
+                switchView.isOn = SettingsUtils.instance.getUseCriticalNotifications() // 从配置文件中获取状态
+            } else if indexPath.row == 4 || indexPath.row == 5 {
                 cell.textLabel?.textColor = .systemBlue // 文本设置成蓝色
                 return cell
             }
@@ -336,9 +332,9 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         } else if indexPath.section == MainViewController.notificationsAtSection {
             if indexPath.row == 1 && tableCellList[MainViewController.notificationsAtSection].count < 3 { // 跳转到通知设置
                 self.onClickToNotificationSettings()
-            } else if indexPath.row == 3 { // 发送通知
+            } else if indexPath.row == 4 { // 发送通知
                 self.onClickSendNotification()
-            } else if indexPath.row == 4 { // 跳转到通知设置
+            } else if indexPath.row == 5 { // 跳转到通知设置
                 self.onClickToNotificationSettings()
             }
         } else if indexPath.section == MainViewController.aboutAtSection { // 关于
@@ -425,8 +421,43 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
         } else if sender.tag == SettingsSwitchViewTag.EnableToggleCellularDataSlotNotifications.rawValue {
             SettingsUtils.instance.setEnableToggleCellularDataSlotNotifications(enable: sender.isOn)
+            // 刷新通知
+            NotificationController.instance.sendNotifications(silentNotifications: true)
         } else if sender.tag == SettingsSwitchViewTag.EnableToggleNetworkTypeNotifications.rawValue {
             SettingsUtils.instance.setEnableToggleNetworkTypeNotifications(enable: sender.isOn)
+            // 刷新通知
+            NotificationController.instance.sendNotifications(silentNotifications: true)
+        } else if sender.tag == SettingsSwitchViewTag.UseCriticalNotifications.rawValue {
+            if sender.isOn {
+                
+                NotificationController.instance.requestAuthorization { _ in // 再次申请权限
+                        NotificationController.instance.isCriticalNotificationEnabled { enabled in
+
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else {
+                                    return
+                                }
+                                
+                                if enabled { // 拿到了重要通知权限
+                                    SettingsUtils.instance.setUseCriticalNotifications(enable: true)
+                                    // 刷新通知
+                                    NotificationController.instance.sendNotifications(silentNotifications: true)
+                                    
+                                } else { // 没拿到 提示用户开启
+                                    sender.setOn(false, animated: true)
+                                    SettingsUtils.instance.setUseCriticalNotifications(enable: false)
+                                    UIUtils.showAlert(message: NSLocalizedString("CriticalAlertMessage", comment: ""), in: self)
+                                }
+                            }
+                        }
+                    }
+                
+            } else {
+                SettingsUtils.instance.setUseCriticalNotifications(enable: false)
+                // 刷新通知
+                NotificationController.instance.sendNotifications(silentNotifications: true)
+            }
+            
         }
     }
     
@@ -435,6 +466,15 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         // 第一次先清空
         tableCellList[MainViewController.notificationsAtSection] = []
         tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("Enable", comment: ""))
+        
+        // 判断是否关闭了重要通知
+        if SettingsUtils.instance.getUseCriticalNotifications() {
+            NotificationController.instance.isCriticalNotificationEnabled { enabled in
+                if !enabled {
+                    SettingsUtils.instance.setUseCriticalNotifications(enable: false)
+                }
+            }
+        }
         
         // 必须等待权限查询完才能更新 UI
         NotificationController.instance.ensureAuthorization { status in
@@ -448,6 +488,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                         self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("ToggleCellularDataSlotNotifications", comment: ""))
                         // 切换网络类型的通知
                         self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("ToggleNetworkTypeNotifications", comment: ""))
+                        self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("UseCriticalNotifications", comment: ""))
                         self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("SendNotifications", comment: ""))
                         self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("GoToNotificationSettings", comment: ""))
                     }

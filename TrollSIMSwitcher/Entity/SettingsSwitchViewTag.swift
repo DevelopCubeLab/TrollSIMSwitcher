@@ -11,4 +11,5 @@ enum SettingsSwitchViewTag: Int {
     case EnableNotifications = 6
     case EnableToggleCellularDataSlotNotifications = 7
     case EnableToggleNetworkTypeNotifications = 8
+    case UseCriticalNotifications = 9
 }
