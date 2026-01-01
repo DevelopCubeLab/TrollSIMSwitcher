@@ -3,6 +3,10 @@
 TrollSIMSwitcher brings true one-tap SIM control to iOS.  
 Switch your cellular data between SIMs instantly, toggle 4G/5G, and access all functions directly from shortcuts and widgets—no need to dig through Settings.
 
+Now available 
+<br /><a href="https://havoc.app/package/trollsimswitch"><img src="https://docs.havoc.app/img/badges/available_square.svg" alt="Havoc" width="200"/></a><br />
+ [Havoc](https://havoc.app/package/trollsimswitch)  
+
 **Features**
 - Dual SIM data switching with a single tap
 - Switch between 4G(LTE) / 5G modes instantly
