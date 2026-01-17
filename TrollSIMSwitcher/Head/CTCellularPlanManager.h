@@ -104,7 +104,7 @@
 -(id)getPlansPendingTransfer:(id*)arg1 ;
 -(void)fetchRemoteProfiles:(id)arg1 ;
 -(void)didSelectPlanItem:(id)arg1 isEnable:(BOOL)arg2 completion:(/*^block*/id)arg3;
--(id)didSelectPlanItem:(id)arg1 isEnable:(BOOL)arg2; // 开启或者关闭某张卡
+-(id)didSelectPlanItem:(id)arg1 isEnable:(BOOL)enable; // 开启或者关闭某张卡
 -(void)remotePlanItemsWithCompletion:(/*^block*/id)arg1 ;
 -(unsigned long long)getSupportedFlowTypes;
 -(void)userSignupInitiatedOrFailed;

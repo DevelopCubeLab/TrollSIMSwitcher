@@ -49,6 +49,22 @@
         }
       }
     },
+    "CellularPlanCount" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cellular Plan Count: %d"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蜂窝数据卡: %d张"
+          }
+        }
+      }
+    },
     "CFBundleDisplayName" : {
       "localizations" : {
         "en" : {
@@ -291,6 +307,22 @@
         }
       }
     },
+    "NoCellularPlanSelected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Cellular Plan Selected"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有选择蜂窝数据卡"
+          }
+        }
+      }
+    },
     "NoNotificationEnabledMessage" : {
       "localizations" : {
         "en" : {
@@ -405,6 +437,22 @@
         }
       }
     },
+    "SelectCellularPlan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select Cellular Plan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择蜂窝数据卡"
+          }
+        }
+      }
+    },
     "SendNotificationMessage" : {
       "comment" : "发送通知成功",
       "localizations" : {
@@ -450,6 +498,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "快捷切换"
+          }
+        }
+      }
+    },
+    "ShowAlertWhenTurningOffCellularPlan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Alert When Turning Off Cellular Plan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭蜂窝数据卡时提示"
           }
         }
       }
@@ -706,6 +770,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "切换网络类型通知"
+          }
+        }
+      }
+    },
+    "TurnOff" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn Off"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭"
+          }
+        }
+      }
+    },
+    "TurnOffCellularPlan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn Off %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭%@"
+          }
+        }
+      }
+    },
+    "TurnOn" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn On"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开"
+          }
+        }
+      }
+    },
+    "TurnOnCellularPlan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn On %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用%@"
           }
         }
       }

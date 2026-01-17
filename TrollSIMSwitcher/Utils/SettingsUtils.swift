@@ -37,6 +37,36 @@ class SettingsUtils {
         return writeable
     }
     
+    // 获取全部的选择的蜂窝数据套餐卡
+    private func getSelectCellularPlans() -> [String : String] {
+        let data =  plistManager.getDictionary(key: "SelectCellularPlans", defaultValue: [:])
+        return data.compactMapValues { $0 as? String }
+    }
+    
+    // 设置全部的选择的蜂窝数据套餐卡
+    private func setSelectCellularPlans(selectPlans: [String : String]) {
+        plistManager.setDictionary(key: "SelectCellularPlans", value: selectPlans)
+        plistManager.apply()
+    }
+    
+    func getSelectCellularPlan(key: String) -> String {
+        return getSelectCellularPlans()[key] ?? ""
+    }
+    
+    func setSelectCellularPlan(key: String, planID: String) {
+        var plans = getSelectCellularPlans()
+        plans[key] = planID
+        setSelectCellularPlans(selectPlans: plans)
+    }
+    
+    func getSelectCellularPlan1() -> String {
+        return getSelectCellularPlan(key: "Plan1")
+    }
+    
+    func setSelectCellularPlan1(planID: String) {
+        setSelectCellularPlan(key: "Plan1", planID: planID)
+    }
+    
     /// 获取是否开启兼容性切换模式
     func getEnableCompatibilitySwitchMode() -> Bool {
         return plistManager.getBool(key: "CompatibilitySwitchMode", defaultValue: false)
@@ -80,6 +110,16 @@ class SettingsUtils {
     
     func setShowPhoneNumber(enable: Bool) {
         plistManager.setBool(key: "ShowPhoneNumber", value: enable)
+        plistManager.apply()
+    }
+    
+    /// 获取是否在关闭蜂窝号码之前显示警告
+    func getShowAlertWhenTurningOffCellularPlan() -> Bool {
+        return plistManager.getBool(key: "ShowAlertWhenTurningOffCellularPlan", defaultValue: true)
+    }
+    
+    func setShowAlertWhenTurningOffCellularPlan(enable: Bool) {
+        plistManager.setBool(key: "ShowAlertWhenTurningOffCellularPlan", value: enable)
         plistManager.apply()
     }
     

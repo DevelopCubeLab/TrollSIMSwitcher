@@ -12,4 +12,5 @@ enum SettingsSwitchViewTag: Int {
     case EnableToggleCellularDataSlotNotifications = 7
     case EnableToggleNetworkTypeNotifications = 8
     case UseCriticalNotifications = 9
+    case ShowAlertWhenTurningOffCellularPlan = 10
 }

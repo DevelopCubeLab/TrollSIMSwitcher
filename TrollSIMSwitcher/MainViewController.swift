@@ -7,17 +7,19 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     private var tableView = UITableView()
     
     private var tableCellList = [[], [],
+                                 ["", NSLocalizedString("SelectCellularPlan", comment: "")],
                                  [NSLocalizedString("CompatibilitySwitchMode", comment: ""),
                                   NSLocalizedString("ShowSlotLabel", comment: ""),
                                   NSLocalizedString("ShowOperatorName", comment: ""),
-                                  NSLocalizedString("ShowPhoneNumber", comment: "")],
+                                  NSLocalizedString("ShowPhoneNumber", comment: ""),
+                                  NSLocalizedString("ShowAlertWhenTurningOffCellularPlan", comment: "")],
                                  [NSLocalizedString("HomeScreenQuickActions", comment: ""),
                                   NSLocalizedString("ExitAfterQuickSwitching", comment: "")],
                                  [],
                                  [NSLocalizedString("Version", comment: ""), "GitHub", "Havoc"]]
 
-    private static let notificationsAtSection = 4
-    private static let aboutAtSection = 5
+    private static let notificationsAtSection = 5
+    private static let aboutAtSection = 6
     
     private var SIMSlotList: [SIMSlot] = []
     
@@ -113,13 +115,13 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             return NSLocalizedString("CellularData", comment: "")
         } else if section == 1 {
             return NSLocalizedString("NetworkType", comment: "")
-        } else if section == 2 {
-            return NSLocalizedString("Options", comment: "")
         } else if section == 3 {
+            return NSLocalizedString("Options", comment: "")
+        } else if section == 4 {
             return NSLocalizedString("Shortcuts", comment: "")
         } else if section == MainViewController.notificationsAtSection {
             return NSLocalizedString("Notifications", comment: "")
-        } else if section == 5 {
+        } else if section == MainViewController.aboutAtSection {
             return NSLocalizedString("About", comment: "")
         }
         return nil
@@ -136,11 +138,11 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
 //            return text
         
 //        }
-        if section == 0 {
-            return String(describing: CoreTelephonyController.instance.getCellularPlans())
-        }
+//        if section == 0 {
+//            return String(describing: CoreTelephonyController.instance.getCellularPlans())
+//        }
 #endif
-        if section == 2 {
+        if section == 3 {
             return String.localizedStringWithFormat(NSLocalizedString("EnableCompatibilityModeMessage", comment: ""), NSLocalizedString("CompatibilitySwitchMode", comment: ""))
         } else if section == MainViewController.notificationsAtSection {
             return NSLocalizedString("NotificationsFooterMessage", comment: "")
@@ -191,7 +193,41 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                     cell.accessoryType = .none
                 }
             }
-        } else if indexPath.section == 2 { // 选项
+        } else if indexPath.section == 2 { // 开关某一张卡
+            cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
+            cell.textLabel?.numberOfLines = 0 // 允许换行
+            if indexPath.row == 0 { // 开关
+                if SettingsUtils.instance.getSelectCellularPlan1().isEmpty { // 当前没有去选择数据套餐
+                    cell.textLabel?.text = NSLocalizedString("NoCellularPlanSelected", comment: "")
+                    // 禁用选择
+                    cell.selectionStyle = .none
+                    cell.isUserInteractionEnabled = false
+                    cell.textLabel?.textColor = .lightGray //文本变成灰色
+                } else {
+                    // 设置开关卡槽
+                    let cellularPlan = CoreTelephonyController.instance.getCellularPlan(planID: SettingsUtils.instance.getSelectCellularPlan1())
+                    if cellularPlan != nil {
+                        let cellularPlanText: String?
+                        if SettingsUtils.instance.getShowSlotLabel() { // 是否显示卡标签
+                            cellularPlanText = cellularPlan?.label
+                        } else {
+                            cellularPlanText = cellularPlan?.carrierName
+                        }
+                        if cellularPlan?.isSelected ?? false {
+                            cell.textLabel?.text = String.localizedStringWithFormat(NSLocalizedString("TurnOffCellularPlan", comment: ""), cellularPlanText ?? "")
+                            cell.textLabel?.textColor = .systemRed //文本变成红色
+                        } else {
+                            cell.textLabel?.text = String.localizedStringWithFormat(NSLocalizedString("TurnOnCellularPlan", comment: ""), cellularPlanText ?? "")
+                            cell.textLabel?.textColor = .systemBlue //文本变成蓝色
+                        }
+                        
+                    }
+                    
+                }
+            } else {
+                cell.accessoryType = .disclosureIndicator
+            }
+        } else if indexPath.section == 3 { // 选项
             cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
             cell.textLabel?.numberOfLines = 0 // 允许换行
             let switchView = UISwitch(frame: .zero)
@@ -216,6 +252,9 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             } else if indexPath.row == 3 { // 显示电话号码
                 switchView.tag = SettingsSwitchViewTag.ShowPhoneNumber.rawValue // 设置识别id
                 switchView.isOn = SettingsUtils.instance.getShowPhoneNumber() // 从配置文件中获取状态
+            } else if indexPath.row == 4 { // 在关闭蜂窝号码之前显示警告
+                switchView.tag = SettingsSwitchViewTag.ShowAlertWhenTurningOffCellularPlan.rawValue // 设置识别id
+                switchView.isOn = SettingsUtils.instance.getShowAlertWhenTurningOffCellularPlan() // 从配置文件中获取状态
             }
             // 开光状态改变的回调
             switchView.addAction(UIAction { [weak self] action in
@@ -224,7 +263,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             cell.accessoryView = switchView
             cell.selectionStyle = .none
             
-        } else if indexPath.section == 3 { // 快捷方式
+        } else if indexPath.section == 4 { // 快捷方式
             cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
             cell.textLabel?.numberOfLines = 0 // 允许换行
             let switchView = UISwitch(frame: .zero)
@@ -342,6 +381,12 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 }
             }
 
+        } else if indexPath.section == 2 {
+            if indexPath.row == 0 { // 关闭或者打开某个卡
+                CoreTelephonyController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1())
+            } else if indexPath.row == 1 { // 打开卡槽设置
+                self.navigationController!.pushViewController(SelectCellularPlanViewController(), animated: true)
+            }
         } else if indexPath.section == MainViewController.notificationsAtSection {
             if indexPath.row == 1 && tableCellList[MainViewController.notificationsAtSection].count < 3 { // 跳转到通知设置
                 self.onClickToNotificationSettings()
@@ -373,12 +418,15 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             // 补发普通通知
             NotificationController.instance.sendNotifications(silentNotifications: true)
             tableView.reloadSections(IndexSet(integer: 0), with: .none)
+            tableView.reloadSections(IndexSet(integer: 2), with: .none)
         } else if sender.tag == SettingsSwitchViewTag.ShowOperatorName.rawValue {
             SettingsUtils.instance.setShowOperatorName(enable: sender.isOn)
             tableView.reloadSections(IndexSet(integer: 0), with: .none)
         } else if sender.tag == SettingsSwitchViewTag.ShowPhoneNumber.rawValue {
             SettingsUtils.instance.setShowPhoneNumber(enable: sender.isOn)
             tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
+        } else if sender.tag == SettingsSwitchViewTag.ShowAlertWhenTurningOffCellularPlan.rawValue {
+            SettingsUtils.instance.setShowAlertWhenTurningOffCellularPlan(enable: sender.isOn)
         } else if sender.tag == SettingsSwitchViewTag.EnableHomeScreenQuickActions.rawValue {
             SettingsUtils.instance.setEnableHomeScreenQuickActions(enable: sender.isOn)
             // 设置快捷方式
@@ -517,6 +565,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 }
 
                 self.tableView.reloadSections([MainViewController.notificationsAtSection], with: .none)
+                self.tableView.reloadSections(IndexSet(integer: 2), with: .none)
             }
         }
     }

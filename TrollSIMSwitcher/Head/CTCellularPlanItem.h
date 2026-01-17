@@ -72,7 +72,7 @@
 @property (nonatomic,readonly) CTCellularPlan * plan;                                  //@synthesize plan=_plan - In the implementation block
 @property (nonatomic,readonly) CTPlan * ctPlan;                                        //@synthesize ctPlan=_ctPlan - In the implementation block
 @property (nonatomic,readonly) BOOL isBackedByCellularPlan;
-@property (nonatomic,readonly) BOOL isSelected;
+@property (nonatomic,readonly) BOOL isSelected; // 是否启用
 @property (nonatomic,readonly) BOOL isInstalling;
 @property (nonatomic,readonly) long long transferredStatus;                            //@synthesize transferredStatus=_transferredStatus - In the implementation block
 @property (nonatomic,readonly) BOOL isCheckingCellularConnectivity;
@@ -99,7 +99,7 @@
 -(BOOL)isSelectable;
 -(void)setType:(long long)arg1 ;
 -(int)status;
--(NSString *)identifier;
+-(NSString *)identifier; // 获取卡ID
 -(id)typeAsString:(long long)arg1 ;
 -(long long)lockState;
 -(NSString *)name;

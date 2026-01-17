@@ -12,6 +12,8 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
     private let cellularPlanManager = CTCellularPlanManager.shared()
     
     private var IMEIs: [IMEI] = []
+    private var plans: [CTCellularPlanItem] = []
+    private var lastFetchPlansTimeStamp: Int = 0
     
     private override init() {
         
@@ -19,6 +21,7 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         IMEIs = MGDeviceInfoController.instance.IMEIs
         coreTelephonyClient?.setDelegate(self)
         networkInfo.delegate = self
+        loadCellularPlans() // 获取一次蜂窝数据卡
     }
 
     // 根据slot获取当前插槽的上下文
@@ -54,26 +57,52 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         return []
     }
     
-    // 获取全部数据流量卡
+    // 加载全部数据流量卡
+    private func loadCellularPlans() {
+        
+        // 缓存如果大于30s就去获取一次新的数据
+        if (Int(Date().timeIntervalSince1970) - lastFetchPlansTimeStamp) > 30 {
+            let sema = DispatchSemaphore(value: 0) // 创建一个信号量为 0 的锁
+
+            cellularPlanManager?.planItems { items in
+                self.plans = items ?? []
+                sema.signal() // 继续线程
+            }
+
+            sema.wait() // 挂起线程
+            lastFetchPlansTimeStamp = Int(Date().timeIntervalSince1970) // 把当前的时间戳写入，作为判断缓存的标志
+        }
+    }
+    
+    // 获取全部蜂窝数据卡
     func getCellularPlans() -> [CTCellularPlanItem] {
-        var plans: [CTCellularPlanItem] = []
-        let sema = DispatchSemaphore(value: 0) // 创建一个信号量为 0 的锁
-
-        cellularPlanManager?.planItems { items in
-            plans = items ?? []
-            sema.signal() // 继续线程
-        }
-
-        sema.wait() // 挂起线程
-        
-        for plan in plans {
-            NSLog("[TrollSIMSwitcher] -----> \(type(of: cellularPlanManager?.getSubscriptionContextUUIDforPlan(plan)))")
-            NSLog("[TrollSIMSwitcher] -----> \(String(describing: cellularPlanManager?.getSubscriptionContextUUIDforPlan(plan))))")
-        }
-        
-        NSLog("[TrollSIMSwitcher] CTCellularPlanItems: \(String(describing: plans))")
+        loadCellularPlans()
         return plans
-        
+    }
+    
+    // 获取某个蜂窝数据卡
+    func getCellularPlan(planID: String) -> CTCellularPlanItem? {
+        loadCellularPlans()
+        return plans.filter{ $0.identifier == planID }.first
+    }
+    
+    // 设置蜂窝数据卡启用或者关闭
+    func setCellularPlanEnable(planID: String, enable: Bool) {
+        let plan = getCellularPlan(planID: planID)
+        if plan != nil {
+            cellularPlanManager?.didSelectPlanItem(plan, isEnable: enable)
+            // 设置缓存失效，这样就可以立刻刷新数据卡数据
+            lastFetchPlansTimeStamp = 0
+        }
+    }
+    
+    func toggleCellularPlanEnable(planID: String) {
+        let plan = getCellularPlan(planID: planID)
+        if plan != nil {
+            cellularPlanManager?.didSelectPlanItem(plan, isEnable: !(plan?.isSelected ?? false))
+            // 设置缓存失效，这样就可以立刻刷新数据卡数据
+            lastFetchPlansTimeStamp = 0
+        }
     }
     
     // 获取所有SIM卡卡槽信息
