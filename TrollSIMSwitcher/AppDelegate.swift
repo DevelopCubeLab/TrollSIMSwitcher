@@ -102,6 +102,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 switchSuccessful = CoreTelephonyController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: false)
             case "TrollSIMSwitcherToggleCellularPlan": // 切换蜂窝数据卡状态
                 switchSuccessful = CoreTelephonyController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1())
+            case "TrollSIMSwitcherRebootCommCenter": // 重启基带服务
+                let deviceController = DeviceController()
+                if deviceController.rebootCommCenter() {
+                    UIApplication.shared.perform(#selector(NSXPCConnection.suspend)) // 返回桌面
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        exit(0)
+                    }
+                    return
+                }
             default: return
             }
             

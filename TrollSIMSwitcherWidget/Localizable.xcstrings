@@ -7,6 +7,38 @@
     "5G" : {
       "shouldTranslate" : false
     },
+    "RebootCommCenter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restart Cellular Service"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重启蜂窝网络服务"
+          }
+        }
+      }
+    },
+    "RebootCommCenterDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rebooting the baseband service will reload cellular network components and may help resolve issues such as signal problems, unstable data connections, or failed switching."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重启基带服务将重新加载蜂窝网络相关组件，可用于解决信号异常、数据连接不稳定或切换失败等问题。"
+          }
+        }
+      }
+    },
     "SwitchCellularPlan" : {
       "localizations" : {
         "en" : {

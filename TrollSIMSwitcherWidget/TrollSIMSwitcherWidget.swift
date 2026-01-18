@@ -149,6 +149,20 @@ struct TrollSIMSwitcherToggleCellularPlan: Widget {
     }
 }
 
+@available(iOSApplicationExtension 16.0, *)
+struct TrollSIMSwitcherRebootCommCenter: Widget {
+    let kind: String = "TrollSIMSwitcherRebootCommCenter"
+    
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: SimpleLockScreenProvider()) { entry in
+            TrollSIMSwitcherRebootCommCenterView(entry: entry)
+        }
+        .configurationDisplayName(NSLocalizedString("RebootCommCenter", comment: ""))
+        .description("RebootCommCenterDescription")
+        .supportedFamilies([.accessoryCircular])
+    }
+}
+
 struct TrollSIMSwitcherSlot1View: View {
     var entry: LockScreenEntry
     
@@ -317,6 +331,32 @@ struct TrollSIMSwitcherToggleCellularPlanView: View {
         ZStack {
             // 主图标
             Image(systemName: "simcard")
+                .font(.system(size: 32))
+                .foregroundColor(.primary)
+
+            // 右下角图标
+            ZStack {
+                Circle()
+                    .fill(Color.white)  // 白色背景，防止图标透过去
+                    .frame(width: 20, height: 20)
+
+                Image(systemName: "power")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(.black) // 黑色反差最大
+            }
+            .offset(x: 12, y: 12) // 偏移位置
+        }
+        .frame(width: 44, height: 44)
+        .applyLockScreenBackground()
+    }
+}
+
+struct TrollSIMSwitcherRebootCommCenterView: View {
+    var entry: LockScreenEntry
+    var body: some View {
+        ZStack {
+            // 主图标
+            Image(systemName: "antenna.radiowaves.left.and.right")
                 .font(.system(size: 32))
                 .foregroundColor(.primary)
 

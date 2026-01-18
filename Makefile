@@ -9,7 +9,7 @@ before-all::
 
 # 使用 Xcode 项目构建
 XCODEPROJ_NAME = TrollSIMSwitcher
-BUILD_VERSION = "1.1"
+BUILD_VERSION = "1.2"
 FILE_NAME = "com.developlab.trollsimswitcher"
 
 # 指定 Theos 使用 xcodeproj 规则
@@ -28,6 +28,9 @@ before-package::
 	@rm -rf $(THEOS_STAGING_DIR)/Applications/$(XCODEPROJ_NAME).app/PlugIns/TrollSIMSwitcherWidgetExtension.appex/_CodeSignature
 	@echo -e "\033[32mRemoving Frameworks folder..."
 	@rm -rf $(THEOS_STAGING_DIR)/Applications/$(XCODEPROJ_NAME).app/Frameworks
+	@echo -e "\033[32mCopy RootHelper to package..."
+	# 这里必须要手动复制RootHelper到包内，不要放到Xcode工程目录下，不然就无法运行二进制文件
+	@cp -f MaintenanceHelper/MaintenanceHelper $(THEOS_STAGING_DIR)/Applications/$(XCODEPROJ_NAME).app/
 	
 # 包装完成后重命名为 .tipa
 after-package::

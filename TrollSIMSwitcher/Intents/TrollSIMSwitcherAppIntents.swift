@@ -285,3 +285,18 @@ struct TrollSIMSwitcherManageCellularPlanIntent: AppIntent {
         return .result(value: result)
     }
 }
+
+// 重启基带服务
+@available(iOS 16, *)
+struct TrollSIMSwitcherRebootCommCenterIntent: AppIntent {
+    static var title: LocalizedStringResource = "RebootCommCenter"
+    static var description = IntentDescription("RebootCommCenterDescription")
+
+    static var resultType: Bool.Type { Bool.self }
+    
+    func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
+        let deviceController = DeviceController()
+        let result = deviceController.rebootCommCenter()
+        return .result(value: result)
+    }
+}

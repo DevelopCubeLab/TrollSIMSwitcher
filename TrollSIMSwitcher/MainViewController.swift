@@ -2,12 +2,13 @@ import UIKit
 
 class MainViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    static let versionCode = "1.1"
+    static let versionCode = "1.2"
     
     private var tableView = UITableView()
     
     private var tableCellList = [[], [],
                                  ["", NSLocalizedString("SelectCellularPlan", comment: "")],
+                                 [NSLocalizedString("RebootCommCenter", comment: "")],
                                  [NSLocalizedString("CompatibilitySwitchMode", comment: ""),
                                   NSLocalizedString("ShowSlotLabel", comment: ""),
                                   NSLocalizedString("ShowOperatorName", comment: ""),
@@ -18,8 +19,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                                  [],
                                  [NSLocalizedString("Version", comment: ""), "GitHub", "Havoc"]]
 
-    private static let notificationsAtSection = 5
-    private static let aboutAtSection = 6
+    private static let notificationsAtSection = 6
+    private static let aboutAtSection = 7
     
     private var SIMSlotList: [SIMSlot] = []
     
@@ -127,8 +128,10 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 return nil
             }
         } else if section == 3 {
-            return NSLocalizedString("Options", comment: "")
+            return NSLocalizedString("Maintenance", comment: "")
         } else if section == 4 {
+            return NSLocalizedString("Options", comment: "")
+        } else if section == 5 {
             return NSLocalizedString("Shortcuts", comment: "")
         } else if section == MainViewController.notificationsAtSection {
             return NSLocalizedString("Notifications", comment: "")
@@ -153,7 +156,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
 //            return String(describing: CoreTelephonyController.instance.getCellularPlans())
 //        }
 #endif
-        if section == 3 {
+        if section == 4 {
             return String.localizedStringWithFormat(NSLocalizedString("EnableCompatibilityModeMessage", comment: ""), NSLocalizedString("CompatibilitySwitchMode", comment: ""))
         } else if section == MainViewController.notificationsAtSection {
             return NSLocalizedString("NotificationsFooterMessage", comment: "")
@@ -250,7 +253,11 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             } else {
                 cell.accessoryType = .disclosureIndicator
             }
-        } else if indexPath.section == 3 { // 选项
+        } else if indexPath.section == 3 { // 维护
+            cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
+            cell.textLabel?.numberOfLines = 0 // 允许换行
+            cell.textLabel?.textColor = .systemBlue // 文本设置成蓝色
+        } else if indexPath.section == 4 { // 选项
             cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
             cell.textLabel?.numberOfLines = 0 // 允许换行
             let switchView = UISwitch(frame: .zero)
@@ -286,7 +293,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             cell.accessoryView = switchView
             cell.selectionStyle = .none
             
-        } else if indexPath.section == 4 { // 快捷方式
+        } else if indexPath.section == 5 { // 快捷方式
             cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
             cell.textLabel?.numberOfLines = 0 // 允许换行
             let switchView = UISwitch(frame: .zero)
@@ -473,6 +480,40 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 
             } else if indexPath.row == 1 { // 打开卡槽设置
                 self.navigationController!.pushViewController(SelectCellularPlanViewController(), animated: true)
+            }
+        } else if indexPath.section == 3 { // 维护
+            if indexPath.row == 0 { // 重启基带服务
+                
+                // 设置一个弹窗
+                let alert = UIAlertController(
+                    title: NSLocalizedString("Alert", comment: ""),
+                    message: NSLocalizedString("RebootCommCenterMessage", comment: ""),
+                    preferredStyle: .alert
+                )
+
+                // "确定" 按钮（红色，左边）
+                let deleteAction = UIAlertAction(title: NSLocalizedString("Confirm", comment: ""), style: .destructive) { _ in
+                    let deviceController = DeviceController()
+                    if deviceController.rebootCommCenter() {
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { // 延迟1秒执行
+                            UIApplication.shared.perform(#selector(NSXPCConnection.suspend)) // 返回桌面
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                exit(0)
+                            }
+                        }
+                    }
+                }
+
+                // "取消" 按钮（蓝色，右边）
+                let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
+
+                // 添加按钮，iOS 会自动按照规范排列
+                alert.addAction(deleteAction) // 红色
+                alert.addAction(cancelAction) // 蓝色
+
+                // 显示弹窗
+                present(alert, animated: true, completion: nil)
             }
         } else if indexPath.section == MainViewController.notificationsAtSection {
             if indexPath.row == 1 && tableCellList[MainViewController.notificationsAtSection].count < 3 { // 跳转到通知设置

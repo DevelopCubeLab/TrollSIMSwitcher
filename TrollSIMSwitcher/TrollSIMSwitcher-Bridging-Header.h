@@ -3,6 +3,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "Controller/DeviceController.h"
 #import "Head/CoreTelephonyClient.h"
 #import "Head/CTTelephonyNetworkInfo.h"
 #import "Head/CTXPCServiceSubscriptionContext.h"

@@ -177,6 +177,22 @@
         }
       }
     },
+    "Confirm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确定"
+          }
+        }
+      }
+    },
     "CriticalAlertMessage" : {
       "localizations" : {
         "en" : {
@@ -351,6 +367,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "桌面图标快捷方式"
+          }
+        }
+      }
+    },
+    "Maintenance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maintenance"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "维护"
           }
         }
       }
@@ -545,6 +577,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "选项"
+          }
+        }
+      }
+    },
+    "RebootCommCenter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restart Cellular Service"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重启蜂窝网络服务"
+          }
+        }
+      }
+    },
+    "RebootCommCenterDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rebooting the baseband service will reload cellular network components and may help resolve issues such as signal problems, unstable data connections, or failed switching."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重启基带服务将重新加载蜂窝网络相关组件，可用于解决信号异常、数据连接不稳定或切换失败等问题。"
+          }
+        }
+      }
+    },
+    "RebootCommCenterMessage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restart Cellular Service?\nRestarting the cellular service will temporarily disconnect your network.\nTo avoid unexpected issues, the app will automatically exit after completion. Please wait for the cellular data refresh to complete before opening the App."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确认重启蜂窝网络服务？\n重启基带服务将会短暂中断网络连接。\n为避免异常情况，应用将在操作完成后自动退出。请等待信号刷新完成后再打开App"
           }
         }
       }
