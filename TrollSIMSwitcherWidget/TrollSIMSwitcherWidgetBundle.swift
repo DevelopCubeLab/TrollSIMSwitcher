@@ -10,5 +10,8 @@ struct TrollSIMSwitcherWidgetBundle: WidgetBundle {
         TrollSIMSwitcher4G()
         TrollSIMSwitcher5G()
         TrollSIMSwitcherToggleNetworkType()
+        TrollSIMSwitcherTurnOnCellularPlan()
+        TrollSIMSwitcherTurnOffCellularPlan()
+        TrollSIMSwitcherToggleCellularPlan()
     }
 }

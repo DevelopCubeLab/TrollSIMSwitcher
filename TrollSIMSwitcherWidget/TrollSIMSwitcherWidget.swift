@@ -107,6 +107,48 @@ struct TrollSIMSwitcherToggleNetworkType: Widget {
     }
 }
 
+@available(iOSApplicationExtension 16.0, *)
+struct TrollSIMSwitcherTurnOnCellularPlan: Widget {
+    let kind: String = "TrollSIMSwitcherTurnOnCellularPlan"
+    
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: SimpleLockScreenProvider()) { entry in
+            TrollSIMSwitcherTurnOnCellularPlanView(entry: entry)
+        }
+        .configurationDisplayName(NSLocalizedString("SwitchCellularPlan", comment: ""))
+        .description("TurnOnCellularPlan")
+        .supportedFamilies([.accessoryCircular])
+    }
+}
+
+@available(iOSApplicationExtension 16.0, *)
+struct TrollSIMSwitcherTurnOffCellularPlan: Widget {
+    let kind: String = "TrollSIMSwitcherTurnOffCellularPlan"
+    
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: SimpleLockScreenProvider()) { entry in
+            TrollSIMSwitcherTurnOffCellularPlanView(entry: entry)
+        }
+        .configurationDisplayName(NSLocalizedString("SwitchCellularPlan", comment: ""))
+        .description("TurnOffCellularPlan")
+        .supportedFamilies([.accessoryCircular])
+    }
+}
+
+@available(iOSApplicationExtension 16.0, *)
+struct TrollSIMSwitcherToggleCellularPlan: Widget {
+    let kind: String = "TrollSIMSwitcherToggleCellularPlan"
+    
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: SimpleLockScreenProvider()) { entry in
+            TrollSIMSwitcherToggleCellularPlanView(entry: entry)
+        }
+        .configurationDisplayName(NSLocalizedString("SwitchCellularPlan", comment: ""))
+        .description("ToggleCellularPlanStatus")
+        .supportedFamilies([.accessoryCircular])
+    }
+}
+
 struct TrollSIMSwitcherSlot1View: View {
     var entry: LockScreenEntry
     
@@ -207,6 +249,84 @@ struct TrollSIMSwitcherToggleNetworkTypeView: View {
                     .frame(width: 20, height: 20)
 
                 Image(systemName: "repeat")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(.black) // 黑色反差最大
+            }
+            .offset(x: 12, y: 12) // 偏移位置
+        }
+        .frame(width: 44, height: 44)
+        .applyLockScreenBackground()
+    }
+}
+
+struct TrollSIMSwitcherTurnOnCellularPlanView: View {
+    var entry: LockScreenEntry
+    var body: some View {
+        ZStack {
+            // 主图标
+            Image(systemName: "simcard")
+                .font(.system(size: 32))
+                .foregroundColor(.primary)
+
+            // 右下角图标
+            ZStack {
+                Circle()
+                    .fill(Color.white)  // 白色背景，防止图标透过去
+                    .frame(width: 20, height: 20)
+
+                Image(systemName: "checkmark")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(.black) // 黑色反差最大
+            }
+            .offset(x: 12, y: 12) // 偏移位置
+        }
+        .frame(width: 44, height: 44)
+        .applyLockScreenBackground()
+    }
+}
+
+struct TrollSIMSwitcherTurnOffCellularPlanView: View {
+    var entry: LockScreenEntry
+    var body: some View {
+        ZStack {
+            // 主图标
+            Image(systemName: "simcard")
+                .font(.system(size: 32))
+                .foregroundColor(.primary)
+
+            // 右下角图标
+            ZStack {
+                Circle()
+                    .fill(Color.white)  // 白色背景，防止图标透过去
+                    .frame(width: 20, height: 20)
+
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(.black) // 黑色反差最大
+            }
+            .offset(x: 12, y: 12) // 偏移位置
+        }
+        .frame(width: 44, height: 44)
+        .applyLockScreenBackground()
+    }
+}
+
+struct TrollSIMSwitcherToggleCellularPlanView: View {
+    var entry: LockScreenEntry
+    var body: some View {
+        ZStack {
+            // 主图标
+            Image(systemName: "simcard")
+                .font(.system(size: 32))
+                .foregroundColor(.primary)
+
+            // 右下角图标
+            ZStack {
+                Circle()
+                    .fill(Color.white)  // 白色背景，防止图标透过去
+                    .frame(width: 20, height: 20)
+
+                Image(systemName: "power")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundColor(.black) // 黑色反差最大
             }

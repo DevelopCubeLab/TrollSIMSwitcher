@@ -17,6 +17,22 @@
         }
       }
     },
+    "Action" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Action"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作"
+          }
+        }
+      }
+    },
     "Alert" : {
       "localizations" : {
         "en" : {
@@ -77,6 +93,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "蜂窝数据卡"
+          }
+        }
+      }
+    },
+    "CellularPlanAction" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cellular Plan Action"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蜂窝数据卡操作"
           }
         }
       }
@@ -319,6 +351,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "桌面图标快捷方式"
+          }
+        }
+      }
+    },
+    "ManageCellularPlan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage Cellular Plan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设定蜂窝数据卡"
+          }
+        }
+      }
+    },
+    "ManageCellularPlanDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on/off/toggle selected cellular data card"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开/关闭/切换选择的蜂窝数据卡"
           }
         }
       }
@@ -790,6 +854,22 @@
         }
       }
     },
+    "Toggle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换"
+          }
+        }
+      }
+    },
     "ToggleCellularDataSlotNotifications" : {
       "localizations" : {
         "en" : {
@@ -802,6 +882,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "切换数据卡槽通知"
+          }
+        }
+      }
+    },
+    "ToggleCellularPlanNotifications" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle Cellular Plan Notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换蜂窝数据卡通知"
+          }
+        }
+      }
+    },
+    "ToggleCellularPlanStatus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle Cellular Plan Status"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换蜂窝数据卡状态"
           }
         }
       }
@@ -870,6 +982,22 @@
         }
       }
     },
+    "TurnOffCellularPlanText" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn Off Cellular Plan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭蜂窝数据卡"
+          }
+        }
+      }
+    },
     "TurnOn" : {
       "localizations" : {
         "en" : {
@@ -898,6 +1026,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "启用%@"
+          }
+        }
+      }
+    },
+    "TurnOnCellularPlanText" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn On Cellular Plan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开蜂窝数据卡"
           }
         }
       }

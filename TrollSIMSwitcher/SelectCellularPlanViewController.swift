@@ -103,5 +103,7 @@ class SelectCellularPlanViewController: UIViewController, UITableViewDelegate, U
         tableView.reloadData()
         // 切换设置后告诉主界面刷新下整个数据集
         NotificationCenter.default.post(name: Notification.Name("CoreTelephonyUpdated"), object: nil)
+        // 补发普通通知
+        NotificationController.instance.sendNotifications(silentNotifications: true)
     }
 }

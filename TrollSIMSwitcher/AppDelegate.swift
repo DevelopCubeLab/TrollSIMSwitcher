@@ -96,7 +96,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 switchSuccessful = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._2G)
             case SettingsUtils.SwitchTo3GID: // 切换到3G
                 switchSuccessful = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._3G)
-
+            case "TrollSIMSwitcherTurnOnCellularPlan": // 打开蜂窝数据卡
+                switchSuccessful = CoreTelephonyController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: true)
+            case "TrollSIMSwitcherTurnOffCellularPlan": // 关闭蜂窝数据卡
+                switchSuccessful = CoreTelephonyController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: false)
+            case "TrollSIMSwitcherToggleCellularPlan": // 切换蜂窝数据卡状态
+                switchSuccessful = CoreTelephonyController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1())
             default: return
             }
             
@@ -160,6 +165,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 if CoreTelephonyController.instance.setDataPreferredRate(selectRate: DataRates._5G) {
                     UIUtils.exitApplicationAfterSwitching()
                 }
+            case NotificationController.turnOnCellularPlanIdentifier:
+                if CoreTelephonyController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: true) {
+                    UIUtils.exitApplicationAfterSwitching()
+                }
+            case NotificationController.turnOffCellularPlanIdentifier:
+                if CoreTelephonyController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: false) {
+                    UIUtils.exitApplicationAfterSwitching()
+                }
             default: break
             }
             // 补发通知
@@ -171,6 +184,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     SettingsUtils.instance.setEnableToggleCellularDataSlotNotifications(enable: false)
                 } else if groupID == NotificationController.switchNetworkTypeGroupIdentifier { // 关闭切换蜂窝类型的通知
                     SettingsUtils.instance.setEnableToggleNetworkTypeNotifications(enable: false)
+                } else if groupID == NotificationController.switchCellularPlanGroupIdentifier { // 关闭切换蜂窝数据卡的通知
+                    SettingsUtils.instance.setEnableToggleCellularPlanNotifications(enable: false)
                 }
             }
 

@@ -339,11 +339,17 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                         switchView.isEnabled = false // 禁用开关
                     }
                 }
-            } else if indexPath.row == 3 {
-                // 使用重要通知
+            } else if indexPath.row == 3 { // 切换蜂窝数据卡
+                switchView.tag = SettingsSwitchViewTag.EnableToggleCellularPlanNotifications.rawValue // 设置识别id
+                switchView.isOn = SettingsUtils.instance.getEnableToggleCellularPlanNotifications() // 从配置文件中获取状态
+                if !CoreTelephonyController.instance.canManageCellularPlans() {
+                    cell.textLabel?.textColor = .lightGray //文本变成灰色
+                    switchView.isEnabled = false // 禁用开关
+                }
+            } else if indexPath.row == 4 { // 使用重要通知
                 switchView.tag = SettingsSwitchViewTag.UseCriticalNotifications.rawValue // 设置识别id
                 switchView.isOn = SettingsUtils.instance.getUseCriticalNotifications() // 从配置文件中获取状态
-            } else if indexPath.row == 4 || indexPath.row == 5 {
+            } else if indexPath.row == 5 || indexPath.row == 6 {
                 cell.textLabel?.textColor = .systemBlue // 文本设置成蓝色
                 return cell
             }
@@ -427,9 +433,12 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
 
                             // "确定" 按钮（红色，左边）
                             let deleteAction = UIAlertAction(title: NSLocalizedString("TurnOff", comment: ""), style: .destructive) { _ in
-                                CoreTelephonyController.instance.setCellularPlanEnable(planID: cellularPlan.identifier, enable: false)
-                                // 刷新当前的cell
-                                tableView.reloadSections(IndexSet(integer: 2), with: .none)
+                                if CoreTelephonyController.instance.setCellularPlanEnable(planID: cellularPlan.identifier, enable: false) {
+                                    // 刷新当前的cell
+                                    tableView.reloadSections(IndexSet(integer: 2), with: .none)
+                                    // 补发普通通知
+                                    NotificationController.instance.sendNotifications(silentNotifications: true)
+                                }
                             }
 
                             // "取消" 按钮（蓝色，右边）
@@ -443,15 +452,23 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                             present(alert, animated: true, completion: nil)
                             
                         } else { // 开启蜂窝数据卡不需要弹窗提醒
-                            CoreTelephonyController.instance.setCellularPlanEnable(planID: cellularPlan.identifier, enable: true)
-                            // 刷新当前的cell
-                            tableView.reloadSections(IndexSet(integer: 2), with: .none)
+                            if CoreTelephonyController.instance.setCellularPlanEnable(planID: cellularPlan.identifier, enable: true) {
+                                // 刷新当前的cell
+                                tableView.reloadSections(IndexSet(integer: 2), with: .none)
+                                // 补发普通通知
+                                NotificationController.instance.sendNotifications(silentNotifications: true)
+                            }
+                            
                         }
                     }
                 } else { // 不谈出警告的时候直接切换
-                    CoreTelephonyController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1())
-                    // 刷新当前的cell
-                    tableView.reloadSections(IndexSet(integer: 2), with: .none)
+                    if CoreTelephonyController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
+                        // 刷新当前的cell
+                        tableView.reloadSections(IndexSet(integer: 2), with: .none)
+                        // 补发普通通知
+                        NotificationController.instance.sendNotifications(silentNotifications: true)
+                    }
+                    
                 }
                 
             } else if indexPath.row == 1 { // 打开卡槽设置
@@ -460,9 +477,9 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         } else if indexPath.section == MainViewController.notificationsAtSection {
             if indexPath.row == 1 && tableCellList[MainViewController.notificationsAtSection].count < 3 { // 跳转到通知设置
                 self.onClickToNotificationSettings()
-            } else if indexPath.row == 4 { // 发送通知
+            } else if indexPath.row == 5 { // 发送通知
                 self.onClickSendNotification()
-            } else if indexPath.row == 5 { // 跳转到通知设置
+            } else if indexPath.row == 6 { // 跳转到通知设置
                 self.onClickToNotificationSettings()
             }
         } else if indexPath.section == MainViewController.aboutAtSection { // 关于
@@ -558,6 +575,10 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             SettingsUtils.instance.setEnableToggleNetworkTypeNotifications(enable: sender.isOn)
             // 刷新通知
             NotificationController.instance.sendNotifications(silentNotifications: true)
+        } else if sender.tag == SettingsSwitchViewTag.EnableToggleCellularPlanNotifications.rawValue {
+            SettingsUtils.instance.setEnableToggleCellularPlanNotifications(enable: sender.isOn)
+            // 刷新通知
+            NotificationController.instance.sendNotifications(silentNotifications: true)
         } else if sender.tag == SettingsSwitchViewTag.UseCriticalNotifications.rawValue {
             if sender.isOn {
 
@@ -619,6 +640,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                         self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("ToggleCellularDataSlotNotifications", comment: ""))
                         // 切换网络类型的通知
                         self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("ToggleNetworkTypeNotifications", comment: ""))
+                        // 切换蜂窝数据卡的通知
+                        self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("ToggleCellularPlanNotifications", comment: ""))
                         self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("UseCriticalNotifications", comment: ""))
                         self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("SendNotifications", comment: ""))
                         self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("GoToNotificationSettings", comment: ""))
@@ -643,7 +666,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     // 发送通知
     private func onClickSendNotification() {
 
-        if !SettingsUtils.instance.getEnableToggleCellularDataSlotNotifications() && !SettingsUtils.instance.getEnableToggleNetworkTypeNotifications() {
+        if !SettingsUtils.instance.getEnableToggleCellularDataSlotNotifications() && !SettingsUtils.instance.getEnableToggleNetworkTypeNotifications() && !SettingsUtils.instance.getEnableToggleCellularPlanNotifications() {
             // 没有开启任何通知，发出提示
             UIUtils.showAlert(message: NSLocalizedString("NoNotificationEnabledMessage", comment: ""), in: self)
             return

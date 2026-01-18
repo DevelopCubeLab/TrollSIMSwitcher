@@ -94,22 +94,39 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
     }
     
     // 设置蜂窝数据卡启用或者关闭
-    func setCellularPlanEnable(planID: String, enable: Bool) {
+    func setCellularPlanEnable(planID: String, enable: Bool) -> Bool {
         let plan = getCellularPlan(planID: planID)
         if plan != nil {
+            if !enable { // 前置检查
+                if !canTurnOffCellularPlan() {
+                    return false
+                }
+            }
+            if plan?.isSelected == enable { // 同一个状态就不用切换了
+                return true
+            }
             cellularPlanManager?.didSelectPlanItem(plan, isEnable: enable)
             // 设置缓存失效，这样就可以立刻刷新数据卡数据
             lastFetchPlansTimeStamp = 0
+            return true
         }
+        return false
     }
     
-    func toggleCellularPlanEnable(planID: String) {
+    func toggleCellularPlanEnable(planID: String) -> Bool {
         let plan = getCellularPlan(planID: planID)
         if plan != nil {
+            if (plan?.isSelected ?? false) { // 前置检查
+                if !canTurnOffCellularPlan() {
+                    return false
+                }
+            }
             cellularPlanManager?.didSelectPlanItem(plan, isEnable: !(plan?.isSelected ?? false))
             // 设置缓存失效，这样就可以立刻刷新数据卡数据
             lastFetchPlansTimeStamp = 0
+            return true
         }
+        return false
     }
     
     // 判断是否有已经启用的蜂窝数据套餐

@@ -7,6 +7,22 @@
     "5G" : {
       "shouldTranslate" : false
     },
+    "SwitchCellularPlan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch Cellular Plan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换蜂窝数据卡"
+          }
+        }
+      }
+    },
     "SwitchDataCard" : {
       "localizations" : {
         "en" : {
@@ -119,6 +135,22 @@
         }
       }
     },
+    "ToggleCellularPlanStatus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle Cellular Plan Status(You need to set the cellular plan that needs to be operated in the App first)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换蜂窝数据卡状态（需要先在App内设置需要操作的蜂窝数据卡）"
+          }
+        }
+      }
+    },
     "ToggleSlot" : {
       "localizations" : {
         "en" : {
@@ -131,6 +163,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "切换至另一个卡槽"
+          }
+        }
+      }
+    },
+    "TurnOffCellularPlan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn Off Cellular Plan(You need to set the cellular plan that needs to be operated in the App first)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭蜂窝数据卡（需要先在App内设置需要操作的蜂窝数据卡）"
+          }
+        }
+      }
+    },
+    "TurnOnCellularPlan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn On Cellular Plan(You need to set the cellular plan that needs to be operated in the App first)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启蜂窝数据卡（需要先在App内设置需要操作的蜂窝数据卡）"
           }
         }
       }

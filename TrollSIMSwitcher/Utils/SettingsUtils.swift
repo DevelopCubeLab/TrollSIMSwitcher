@@ -193,6 +193,16 @@ class SettingsUtils {
         plistManager.apply()
     }
     
+    /// 获取是否开启切换蜂窝数据卡类型通知
+    func getEnableToggleCellularPlanNotifications() -> Bool {
+        return plistManager.getBool(key: "EnableToggleCellularPlanNotifications", defaultValue: false)
+    }
+    
+    func setEnableToggleCellularPlanNotifications(enable: Bool) {
+        plistManager.setBool(key: "EnableToggleCellularPlanNotifications", value: enable)
+        plistManager.apply()
+    }
+    
     // 设置主屏幕快捷方式
     func setHomeScreenQuickActions(application: UIApplication) {
         if getEnableHomeScreenQuickActions() { // 检查是否开启桌面图标快捷方式
