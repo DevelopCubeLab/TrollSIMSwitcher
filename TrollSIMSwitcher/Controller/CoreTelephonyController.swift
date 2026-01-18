@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import CoreTelephony
 
 class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTelephonyClientDataDelegateInternal, CoreTelephonyClientRegistrationDelegateInternal, CTTelephonyNetworkInfoDelegate {
@@ -69,7 +70,13 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
                 sema.signal() // 继续线程
             }
 
-            sema.wait() // 挂起线程
+//            sema.wait() // 挂起线程
+            
+            let result = sema.wait(timeout: .now() + 1.0)
+            if result == .timedOut { // 处理超时的问题
+                plans = []
+            }
+            
             lastFetchPlansTimeStamp = Int(Date().timeIntervalSince1970) // 把当前的时间戳写入，作为判断缓存的标志
         }
     }
@@ -103,6 +110,39 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
             // 设置缓存失效，这样就可以立刻刷新数据卡数据
             lastFetchPlansTimeStamp = 0
         }
+    }
+    
+    // 判断是否有已经启用的蜂窝数据套餐
+    func hasAnyEnabledCellularPlan() -> Bool {
+        return getCellularPlans().contains(where: { $0.isSelected })
+    }
+    
+    /// 判断用户是否有权利管理蜂窝数据卡
+    /// ⚠️ System limitation:
+    /// Disabling the last active cellular plan via CTCellularPlanManager
+    /// will cause CommCenter to enter an invalid state and crash the app.
+    /// This operation is intentionally blocked in-app.
+    /// Users may still disable all plans manually in Settings.
+    func canManageCellularPlans() -> Bool {
+        if UIDevice.current.userInterfaceIdiom == .pad { // 1. iPad蜂窝版无法使用
+            return false
+        }
+        if IMEIs.count < 2 { // 2. 没权限和单卡手机无法使用
+            return false
+        }
+        if plans.count < 2 { // 3. 双卡手机但是就一张卡的用户无法使用
+            return false
+        }
+        return true
+    }
+    
+    // 判断是否可以关闭蜂窝数据套餐
+    func canTurnOffCellularPlan() -> Bool {
+        // 没有启用任何一张卡或者当前就启用了一张卡 那不能把最后一张卡关闭，否则app将无限闪退，直到用户从设置中随意打开一张卡为止
+        if getCellularPlans().count == 1 || getCellularPlans().filter({ $0.isSelected }).count <= 1 {
+            return false
+        }
+        return true
     }
     
     // 获取所有SIM卡卡槽信息
@@ -160,12 +200,17 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
     
     // 获取全部已经启用的卡槽信息
     func getAllEnabledSlots() -> [SIMSlot] {
-        var SIMSlotList = CoreTelephonyController.instance.getAllSIMSlots()
+        var SIMSlotList = getAllSIMSlots()
         if SIMSlotList.count > 1 { // 解决下iPad没启用蜂窝数据的时候什么都不显示的情况
             // 筛选掉未启用的卡槽信息
             SIMSlotList = SIMSlotList.filter { $0.isEnabled }
         }
         return SIMSlotList
+    }
+    
+    // 判断是否有已经启用的卡槽
+    private func hasAnyEnabledSIMSlot() -> Bool {
+        return getAllSIMSlots().contains(where: { $0.isEnabled })
     }
     
     // 切换卡槽流量

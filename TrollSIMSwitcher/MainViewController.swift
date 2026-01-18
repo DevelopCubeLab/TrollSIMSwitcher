@@ -30,6 +30,11 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         navigationItem.title = NSLocalizedString("CFBundleDisplayName", comment: "")
         
         loadSIMSlots()
+        // 判断用户是否符合可以管理蜂窝数据卡的权利
+        if !CoreTelephonyController.instance.canManageCellularPlans() { // 不符合条件的不显示cell
+            tableCellList[2] = []
+        }
+        
         // 判断用户是否开启通知权限
         updateNotificationsCell()
 
@@ -115,6 +120,12 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             return NSLocalizedString("CellularData", comment: "")
         } else if section == 1 {
             return NSLocalizedString("NetworkType", comment: "")
+        } else if section == 2 {
+            if CoreTelephonyController.instance.canManageCellularPlans() { // 只有符合管理蜂窝数据卡条件的环境才显示标题
+                return NSLocalizedString("CellularPlan", comment: "")
+            } else {
+                return nil
+            }
         } else if section == 3 {
             return NSLocalizedString("Options", comment: "")
         } else if section == 4 {
@@ -205,22 +216,34 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                     cell.textLabel?.textColor = .lightGray //文本变成灰色
                 } else {
                     // 设置开关卡槽
-                    let cellularPlan = CoreTelephonyController.instance.getCellularPlan(planID: SettingsUtils.instance.getSelectCellularPlan1())
-                    if cellularPlan != nil {
-                        let cellularPlanText: String?
-                        if SettingsUtils.instance.getShowSlotLabel() { // 是否显示卡标签
-                            cellularPlanText = cellularPlan?.label
-                        } else {
-                            cellularPlanText = cellularPlan?.carrierName
+                    if CoreTelephonyController.instance.hasAnyEnabledCellularPlan() {
+                        if let cellularPlan = CoreTelephonyController.instance.getCellularPlan(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
+                            let cellularPlanText: String
+                            if SettingsUtils.instance.getShowSlotLabel() { // 是否显示卡标签
+                                cellularPlanText = cellularPlan.label
+                            } else {
+                                cellularPlanText = cellularPlan.carrierName == "" ? NSLocalizedString("UnknownCarrier", comment: "") : cellularPlan.carrierName
+                            }
+                            if cellularPlan.isSelected {
+                                cell.textLabel?.text = String.localizedStringWithFormat(NSLocalizedString("TurnOffCellularPlan", comment: ""), cellularPlanText)
+                                cell.textLabel?.textColor = .systemRed //文本变成红色
+                                if !CoreTelephonyController.instance.canTurnOffCellularPlan() { // 如果不能关闭的情况不允许用户关闭最后一张蜂窝数据卡
+                                    // 禁用选择
+                                    cell.selectionStyle = .none
+                                    cell.isUserInteractionEnabled = false
+                                    cell.textLabel?.textColor = .lightGray //文本变成灰色
+                                }
+                            } else {
+                                cell.textLabel?.text = String.localizedStringWithFormat(NSLocalizedString("TurnOnCellularPlan", comment: ""), cellularPlanText)
+                                cell.textLabel?.textColor = .systemBlue //文本变成蓝色
+                            }
                         }
-                        if cellularPlan?.isSelected ?? false {
-                            cell.textLabel?.text = String.localizedStringWithFormat(NSLocalizedString("TurnOffCellularPlan", comment: ""), cellularPlanText ?? "")
-                            cell.textLabel?.textColor = .systemRed //文本变成红色
-                        } else {
-                            cell.textLabel?.text = String.localizedStringWithFormat(NSLocalizedString("TurnOnCellularPlan", comment: ""), cellularPlanText ?? "")
-                            cell.textLabel?.textColor = .systemBlue //文本变成蓝色
-                        }
-                        
+                    } else { // 比如用户选择了某张卡，但是这张卡被移除了
+                        cell.textLabel?.text = NSLocalizedString("NoCellularPlanFound", comment: "")
+                        // 禁用选择
+                        cell.selectionStyle = .none
+                        cell.isUserInteractionEnabled = false
+                        cell.textLabel?.textColor = .lightGray //文本变成灰色
                     }
                     
                 }
@@ -381,9 +404,56 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 }
             }
 
-        } else if indexPath.section == 2 {
+        } else if indexPath.section == 2 { // 管理蜂窝数据卡
             if indexPath.row == 0 { // 关闭或者打开某个卡
-                CoreTelephonyController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1())
+                if SettingsUtils.instance.getShowAlertWhenTurningOffCellularPlan() {
+                    if let cellularPlan = CoreTelephonyController.instance.getCellularPlan(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
+                        if cellularPlan.isSelected { // 禁用某张卡
+                            
+                            // 获取卡名称
+                            let cellularPlanText: String
+                            if SettingsUtils.instance.getShowSlotLabel() { // 是否显示卡标签
+                                cellularPlanText = cellularPlan.label
+                            } else {
+                                cellularPlanText = cellularPlan.carrierName == "" ? NSLocalizedString("UnknownCarrier", comment: "") : cellularPlan.carrierName
+                            }
+                            
+                            // 设置一个弹窗
+                            let alert = UIAlertController(
+                                title: NSLocalizedString("Alert", comment: ""),
+                                message: String.localizedStringWithFormat(NSLocalizedString("TurnOffCellularPlanAlertMessage", comment: ""), cellularPlanText),
+                                preferredStyle: .alert
+                            )
+
+                            // "确定" 按钮（红色，左边）
+                            let deleteAction = UIAlertAction(title: NSLocalizedString("TurnOff", comment: ""), style: .destructive) { _ in
+                                CoreTelephonyController.instance.setCellularPlanEnable(planID: cellularPlan.identifier, enable: false)
+                                // 刷新当前的cell
+                                tableView.reloadSections(IndexSet(integer: 2), with: .none)
+                            }
+
+                            // "取消" 按钮（蓝色，右边）
+                            let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
+
+                            // 添加按钮，iOS 会自动按照规范排列
+                            alert.addAction(deleteAction) // 红色
+                            alert.addAction(cancelAction) // 蓝色
+
+                            // 显示弹窗
+                            present(alert, animated: true, completion: nil)
+                            
+                        } else { // 开启蜂窝数据卡不需要弹窗提醒
+                            CoreTelephonyController.instance.setCellularPlanEnable(planID: cellularPlan.identifier, enable: true)
+                            // 刷新当前的cell
+                            tableView.reloadSections(IndexSet(integer: 2), with: .none)
+                        }
+                    }
+                } else { // 不谈出警告的时候直接切换
+                    CoreTelephonyController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1())
+                    // 刷新当前的cell
+                    tableView.reloadSections(IndexSet(integer: 2), with: .none)
+                }
+                
             } else if indexPath.row == 1 { // 打开卡槽设置
                 self.navigationController!.pushViewController(SelectCellularPlanViewController(), animated: true)
             }

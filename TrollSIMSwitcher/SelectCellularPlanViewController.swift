@@ -69,8 +69,16 @@ class SelectCellularPlanViewController: UIViewController, UITableViewDelegate, U
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "Cell")
         
         let cellularPlan = cellularPlanItems[indexPath.row]
-        
-        cell.textLabel?.text = cellularPlan.label + " (" + cellularPlan.carrierName + ")"
+        if UIDevice.current.userInterfaceIdiom == .pad { // iPad显示的label有问题，所以不显示
+            if cellularPlan.carrierName == "" { // 没有名字的运营商只能这样显示
+                cell.textLabel?.text = NSLocalizedString("UnknownCarrier", comment: "")
+            } else {
+                cell.textLabel?.text = cellularPlan.carrierName
+            }
+            
+        } else {
+            cell.textLabel?.text = (cellularPlan.label ?? "") + " (" + (cellularPlan.carrierName == "" ? NSLocalizedString("UnknownCarrier", comment: "") : cellularPlan.carrierName) + ")"
+        }
         cell.textLabel?.numberOfLines = 0 // 允许换行
         
         cell.detailTextLabel?.text = cellularPlan.isSelected ? NSLocalizedString("TurnOn", comment: "") : NSLocalizedString("TurnOff", comment: "") // 显示当前的卡是否启动

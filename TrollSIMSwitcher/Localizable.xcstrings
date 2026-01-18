@@ -33,6 +33,22 @@
         }
       }
     },
+    "Cancel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消"
+          }
+        }
+      }
+    },
     "CellularData" : {
       "localizations" : {
         "en" : {
@@ -45,6 +61,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "蜂窝数据"
+          }
+        }
+      }
+    },
+    "CellularPlan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cellular Plan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蜂窝数据卡"
           }
         }
       }
@@ -303,6 +335,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "网络类型"
+          }
+        }
+      }
+    },
+    "NoCellularPlanFound" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Cellular Plan Found"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没找到蜂窝数据卡"
           }
         }
       }
@@ -806,6 +854,22 @@
         }
       }
     },
+    "TurnOffCellularPlanAlertMessage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn Off %@?\n\nThis cellular plan will be unavailable.\nYou can turn it back on at any time."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确认关闭 %@？\n\n关闭后，此蜂窝数据套餐将无法用于通话、短信和蜂窝数据。你可以随时在设置中重新开启。"
+          }
+        }
+      }
+    },
     "TurnOn" : {
       "localizations" : {
         "en" : {
@@ -851,6 +915,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未知"
+          }
+        }
+      }
+    },
+    "UnknownCarrier" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown Carrier"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未知运营商"
           }
         }
       }
