@@ -59,12 +59,23 @@ class SettingsUtils {
         setSelectCellularPlans(selectPlans: plans)
     }
     
+    func removeSelectCellularPlan(key: String) {
+        var plans = getSelectCellularPlans()
+        plans.removeValue(forKey: key)
+        setSelectCellularPlans(selectPlans: plans)
+    }
+    
     func getSelectCellularPlan1() -> String {
         return getSelectCellularPlan(key: "Plan1")
     }
     
     func setSelectCellularPlan1(planID: String) {
         setSelectCellularPlan(key: "Plan1", planID: planID)
+    }
+    
+    // 移除选择的蜂窝数据套餐卡设置
+    func removeSelectCellularPlan1() {
+        removeSelectCellularPlan(key: "Plan1")
     }
     
     /// 获取是否开启兼容性切换模式

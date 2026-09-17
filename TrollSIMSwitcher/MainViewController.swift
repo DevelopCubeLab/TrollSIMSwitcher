@@ -2,13 +2,14 @@ import UIKit
 
 class MainViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    static let versionCode = "1.2"
+    static let versionCode = "1.2.1"
     
     private var tableView = UITableView()
     
     private var tableCellList = [[], [],
                                  ["", NSLocalizedString("SelectCellularPlan", comment: "")],
-                                 [NSLocalizedString("RebootCommCenter", comment: "")],
+                                 [NSLocalizedString("RefreshCellularConnection", comment: ""),
+                                  NSLocalizedString("RebootCommCenter", comment: "")],
                                  [NSLocalizedString("CompatibilitySwitchMode", comment: ""),
                                   NSLocalizedString("ShowSlotLabel", comment: ""),
                                   NSLocalizedString("ShowOperatorName", comment: ""),
@@ -143,19 +144,6 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // MARK: - 设置每个分组的底部标题 可以为分组设置尾部文本，如果没有尾部可以返回 nil
     func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-#if DEBUG
-//        if section == 0 {
-//            var text = ""
-//            for slot in SIMSlotList {
-//                text = text.appending(slot.toString()).appending("\n")
-//            }
-//            return text
-        
-//        }
-//        if section == 0 {
-//            return String(describing: CoreTelephonyController.instance.getCellularPlans())
-//        }
-#endif
         if section == 4 {
             return String.localizedStringWithFormat(NSLocalizedString("EnableCompatibilityModeMessage", comment: ""), NSLocalizedString("CompatibilitySwitchMode", comment: ""))
         } else if section == MainViewController.notificationsAtSection {
@@ -240,13 +228,15 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                                 cell.textLabel?.text = String.localizedStringWithFormat(NSLocalizedString("TurnOnCellularPlan", comment: ""), cellularPlanText)
                                 cell.textLabel?.textColor = .systemBlue //文本变成蓝色
                             }
+                        } else { // 比如用户选择了某张卡，但是这张卡被移除了
+                            cell.textLabel?.text = NSLocalizedString("NoCellularPlanFound", comment: "")
+                            // 删除失效配置
+                            SettingsUtils.instance.removeSelectCellularPlan1()
+                            // 禁用选择
+                            cell.selectionStyle = .none
+                            cell.isUserInteractionEnabled = false
+                            cell.textLabel?.textColor = .lightGray //文本变成灰色
                         }
-                    } else { // 比如用户选择了某张卡，但是这张卡被移除了
-                        cell.textLabel?.text = NSLocalizedString("NoCellularPlanFound", comment: "")
-                        // 禁用选择
-                        cell.selectionStyle = .none
-                        cell.isUserInteractionEnabled = false
-                        cell.textLabel?.textColor = .lightGray //文本变成灰色
                     }
                     
                 }
@@ -261,7 +251,6 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
             cell.textLabel?.numberOfLines = 0 // 允许换行
             let switchView = UISwitch(frame: .zero)
-//            switchView.tag = indexPath.row // 设置识别id
             if indexPath.row == 0 { // 获取设置兼容模式
                 switchView.tag = SettingsSwitchViewTag.EnableCompatibilitySwitchMode.rawValue // 设置识别id
                 switchView.isOn = SettingsUtils.instance.getEnableCompatibilitySwitchMode() // 从配置文件中获取状态
@@ -467,8 +456,12 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                             }
                             
                         }
+                    } else { // 设置了某个蜂窝数据套餐卡，但是删除了这张卡
+                        // 那就恢复到默认设置
+                        SettingsUtils.instance.removeSelectCellularPlan1()
+                        tableView.reloadRows(at: [indexPath], with: .none)
                     }
-                } else { // 不谈出警告的时候直接切换
+                } else { // 不弹出警告的时候直接切换
                     if CoreTelephonyController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
                         // 刷新当前的cell
                         tableView.reloadSections(IndexSet(integer: 2), with: .none)
@@ -482,7 +475,9 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 self.navigationController!.pushViewController(SelectCellularPlanViewController(), animated: true)
             }
         } else if indexPath.section == 3 { // 维护
-            if indexPath.row == 0 { // 重启基带服务
+            if indexPath.row == 0 { // 刷新蜂窝网络信号
+                refreshCellularConnection()
+            } else if indexPath.row == 1 { // 重启基带服务
                 
                 // 设置一个弹窗
                 let alert = UIAlertController(
@@ -492,16 +487,12 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 )
 
                 // "确定" 按钮（红色，左边）
-                let deleteAction = UIAlertAction(title: NSLocalizedString("Confirm", comment: ""), style: .destructive) { _ in
+                let confirmAction = UIAlertAction(title: NSLocalizedString("Confirm", comment: ""), style: .destructive) { _ in
                     let deviceController = DeviceController()
                     if deviceController.rebootCommCenter() {
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { // 延迟1秒执行
-                            UIApplication.shared.perform(#selector(NSXPCConnection.suspend)) // 返回桌面
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                exit(0)
-                            }
-                        }
+                        UIUtils.showAlert(message: NSLocalizedString("WaitingForRefresh", comment: ""), in: self)
+                    } else {
+                        UIUtils.showAlert(message: NSLocalizedString("NoPermission", comment: ""), in: self)
                     }
                 }
 
@@ -509,7 +500,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
 
                 // 添加按钮，iOS 会自动按照规范排列
-                alert.addAction(deleteAction) // 红色
+                alert.addAction(confirmAction) // 红色
                 alert.addAction(cancelAction) // 蓝色
 
                 // 显示弹窗
@@ -693,7 +684,9 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                         SettingsUtils.instance.setEnableNotifications(enable: false)
                     }
                 case .notDetermined:
-                    break
+                    if SettingsUtils.instance.getEnableNotifications() { // 修复一个bug，如果用户之前开启了通知，但是因为TrollStore里rebuild icon cache以后通知权限会重置，然后就会出现虽然通知开关开着但是是无效的，强制关闭app内的通知设置
+                        SettingsUtils.instance.setEnableNotifications(enable: false)
+                    }
                 @unknown default:
                     break
                 }
@@ -734,6 +727,36 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             }
         }
     }
+    
+    /// 刷新蜂窝网络信号
+    private func refreshCellularConnection() {
+        // 设置一个弹窗
+        let alert = UIAlertController(
+            title: NSLocalizedString("Alert", comment: ""),
+            message: NSLocalizedString("RefreshCellularConnectionMessage", comment: ""),
+            preferredStyle: .alert
+        )
+        
+        // "确定" 按钮
+        let confirmAction = UIAlertAction(title: NSLocalizedString("Confirm", comment: ""), style: .default) { _ in
+            if AppCapability.hasCommCenterSPI() { // 该API不会抛异常 无权限只是被CommCenter丢弃请求 需要手动判断
+                CoreTelephonyController.instance.refreshCellularConnection()
+                UIUtils.showAlert(message: NSLocalizedString("WaitingForRefresh", comment: ""), in: self)
+            } else { // 无权限
+                UIUtils.showAlert(message: NSLocalizedString("NoPermission", comment: ""), in: self)
+            }
+        }
+
+        // "取消" 按钮
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
+
+        // 添加按钮，iOS 会自动按照规范排列
+        alert.addAction(confirmAction)
+        alert.addAction(cancelAction)
+
+        // 显示弹窗
+        present(alert, animated: true, completion: nil)
+        
+    }
 
 }
-

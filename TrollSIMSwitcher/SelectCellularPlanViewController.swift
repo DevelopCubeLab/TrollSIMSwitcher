@@ -51,7 +51,10 @@ class SelectCellularPlanViewController: UIViewController, UITableViewDelegate, U
     
     // MARK: - 设置每个分组的Cell数量
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return cellularPlanItems.count
+        if cellularPlanItems.count > 0 {
+            return cellularPlanItems.count + 1
+        }
+        return 0
     }
     
     // MARK: - 设置每个分组的顶部标题
@@ -68,28 +71,45 @@ class SelectCellularPlanViewController: UIViewController, UITableViewDelegate, U
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "Cell")
         
-        let cellularPlan = cellularPlanItems[indexPath.row]
-        if UIDevice.current.userInterfaceIdiom == .pad { // iPad显示的label有问题，所以不显示
-            if cellularPlan.carrierName == "" { // 没有名字的运营商只能这样显示
-                cell.textLabel?.text = NSLocalizedString("UnknownCarrier", comment: "")
+        if indexPath.row == 0 { // 增加一个无的选项
+            cell.textLabel?.text = "<" + NSLocalizedString("NotSet", comment: "") + ">"
+            if SettingsUtils.instance.getSelectCellularPlan1().isEmpty {
+                cell.accessoryType = .checkmark
             } else {
-                cell.textLabel?.text = cellularPlan.carrierName
+                cell.accessoryType = .none
             }
+        } else {
+            let cellularPlan = cellularPlanItems[indexPath.row - 1]
+            if let carrierName = cellularPlan.carrierName { // 这里必须判断下CarrierName是否为nil 在iOS 14的机器上运行会闪退
+                if UIDevice.current.userInterfaceIdiom == .pad { // iPad显示的label有问题，所以不显示
+                    if carrierName.isEmpty { // 没有名字的运营商只能这样显示
+                        cell.textLabel?.text = NSLocalizedString("UnknownCarrier", comment: "")
+                    } else { // 设置运营商名字
+                        cell.textLabel?.text = cellularPlan.carrierName
+                    }
+                } else {
+                    cell.textLabel?.text = (cellularPlan.label ?? "") + " (" + (cellularPlan.carrierName == "" ? NSLocalizedString("UnknownCarrier", comment: "") : cellularPlan.carrierName) + ")"
+                }
+            } else {
+                if let label = cellularPlan.label {
+                    cell.textLabel?.text = label + " (" + NSLocalizedString("UnknownCarrier", comment: "") + ")"
+                } else {
+                    cell.textLabel?.text = NSLocalizedString("UnknownCarrier", comment: "")
+                }
+            }
+            cell.textLabel?.numberOfLines = 0 // 允许换行
             
-        } else {
-            cell.textLabel?.text = (cellularPlan.label ?? "") + " (" + (cellularPlan.carrierName == "" ? NSLocalizedString("UnknownCarrier", comment: "") : cellularPlan.carrierName) + ")"
+            cell.detailTextLabel?.text = cellularPlan.isSelected ? NSLocalizedString("TurnOn", comment: "") : NSLocalizedString("TurnOff", comment: "") // 显示当前的卡是否启动
+            cell.detailTextLabel?.textColor = .secondaryLabel
+            cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 15)
+            
+            if cellularPlan.identifier == SettingsUtils.instance.getSelectCellularPlan1() { // 设置是否选中当前的cell
+                cell.accessoryType = .checkmark
+            } else {
+                cell.accessoryType = .none
+            }
         }
-        cell.textLabel?.numberOfLines = 0 // 允许换行
-        
-        cell.detailTextLabel?.text = cellularPlan.isSelected ? NSLocalizedString("TurnOn", comment: "") : NSLocalizedString("TurnOff", comment: "") // 显示当前的卡是否启动
-        cell.detailTextLabel?.textColor = .secondaryLabel
-        cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 15)
-        
-        if cellularPlan.identifier == SettingsUtils.instance.getSelectCellularPlan1() { // 设置是否选中当前的cell
-            cell.accessoryType = .checkmark
-        } else {
-            cell.accessoryType = .none
-        }
+
         
         return cell
     }
@@ -98,8 +118,12 @@ class SelectCellularPlanViewController: UIViewController, UITableViewDelegate, U
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         tableView.deselectRow(at: indexPath, animated: true)
-        // 点击cell后就设置数据卡
-        SettingsUtils.instance.setSelectCellularPlan1(planID: cellularPlanItems[indexPath.row].identifier)
+        if indexPath.row == 0 { // 设置为 未设置
+            SettingsUtils.instance.removeSelectCellularPlan1()
+        } else {
+            // 点击cell后就设置数据卡
+            SettingsUtils.instance.setSelectCellularPlan1(planID: cellularPlanItems[indexPath.row - 1].identifier)
+        }
         tableView.reloadData()
         // 切换设置后告诉主界面刷新下整个数据集
         NotificationCenter.default.post(name: Notification.Name("CoreTelephonyUpdated"), object: nil)

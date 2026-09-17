@@ -104,12 +104,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 switchSuccessful = CoreTelephonyController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1())
             case "TrollSIMSwitcherRebootCommCenter": // 重启基带服务
                 let deviceController = DeviceController()
-                if deviceController.rebootCommCenter() {
-                    UIApplication.shared.perform(#selector(NSXPCConnection.suspend)) // 返回桌面
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        exit(0)
-                    }
-                    return
+                switchSuccessful = deviceController.rebootCommCenter()
+            case "TrollSIMSwitcherRefreshCellularConnection": // 刷新蜂窝网络信号
+                if AppCapability.hasCommCenterSPI() { // 该API不会抛异常 无权限只是被CommCenter丢弃请求 需要手动判断
+                    CoreTelephonyController.instance.refreshCellularConnection()
+                    switchSuccessful = true
+                } else {
+                    switchSuccessful = false
                 }
             default: return
             }
@@ -123,7 +124,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             if switchSuccessful {
                 UIUtils.exitApplicationAfterSwitching()
             } else {
-                UIUtils.showAlert(message: NSLocalizedString("SwitchFailed", comment: ""), in: viewController)
+                UIUtils.showAlert(message: NSLocalizedString("ActionFailed", comment: ""), in: viewController)
             }
         }
         

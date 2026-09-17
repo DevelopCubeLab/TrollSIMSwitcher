@@ -163,6 +163,20 @@ struct TrollSIMSwitcherRebootCommCenter: Widget {
     }
 }
 
+@available(iOSApplicationExtension 16.0, *)
+struct TrollSIMSwitcherRefreshCellularConnection: Widget {
+    let kind: String = "TrollSIMSwitcherRefreshCellularConnection"
+    
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: SimpleLockScreenProvider()) { entry in
+            TrollSIMSwitcherRefreshCellularConnectionView(entry: entry)
+        }
+        .configurationDisplayName(NSLocalizedString("RefreshCellularConnection", comment: ""))
+        .description("RefreshCellularConnectionDescription")
+        .supportedFamilies([.accessoryCircular])
+    }
+}
+
 struct TrollSIMSwitcherSlot1View: View {
     var entry: LockScreenEntry
     
@@ -367,6 +381,32 @@ struct TrollSIMSwitcherRebootCommCenterView: View {
                     .frame(width: 20, height: 20)
 
                 Image(systemName: "power")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(.black) // 黑色反差最大
+            }
+            .offset(x: 12, y: 12) // 偏移位置
+        }
+        .frame(width: 44, height: 44)
+        .applyLockScreenBackground()
+    }
+}
+
+struct TrollSIMSwitcherRefreshCellularConnectionView: View {
+    var entry: LockScreenEntry
+    var body: some View {
+        ZStack {
+            // 主图标
+            Image(systemName: "cellularbars")
+                .font(.system(size: 29))
+                .foregroundColor(.primary)
+
+            // 右下角图标
+            ZStack {
+                Circle()
+                    .fill(Color.white)  // 白色背景，防止图标透过去
+                    .frame(width: 20, height: 20)
+
+                Image(systemName: "arrow.triangle.2.circlepath")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundColor(.black) // 黑色反差最大
             }

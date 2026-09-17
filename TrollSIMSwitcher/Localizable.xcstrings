@@ -33,6 +33,22 @@
         }
       }
     },
+    "ActionFailed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Action Failed"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作失败"
+          }
+        }
+      }
+    },
     "Alert" : {
       "localizations" : {
         "en" : {
@@ -483,6 +499,22 @@
         }
       }
     },
+    "NoPermission" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Permission"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无权限"
+          }
+        }
+      }
+    },
     "NoService" : {
       "localizations" : {
         "en" : {
@@ -565,6 +597,22 @@
         }
       }
     },
+    "NotSet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not Set"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未设置"
+          }
+        }
+      }
+    },
     "Options" : {
       "localizations" : {
         "en" : {
@@ -618,13 +666,61 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restart Cellular Service?\nRestarting the cellular service will temporarily disconnect your network.\nTo avoid unexpected issues, the app will automatically exit after completion. Please wait for the cellular data refresh to complete before opening the App."
+            "value" : "Restart Cellular Service?\nRestarting baseband services will temporarily interrupt cellular network connectivity.\nIf your SIM or eSIM is PIN-protected, you may need to enter the PIN again to unlock it.\nIf you only need to refresh the cellular signal or connection, it is recommended to use “Refresh Cellular Connection” instead."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "确认重启蜂窝网络服务？\n重启基带服务将会短暂中断网络连接。\n为避免异常情况，应用将在操作完成后自动退出。请等待信号刷新完成后再打开App"
+            "value" : "确认重启蜂窝网络服务？\n重启基带服务会暂时中断蜂窝网络连接。\n如果您的SIM卡或eSIM已设置PIN，可能需要再次输入 PIN 以解锁。\n如果您只是想刷新蜂窝网络信号，建议使用“刷新蜂窝网络信号”功能。"
+          }
+        }
+      }
+    },
+    "RefreshCellularConnection" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh Cellular Connection"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刷新蜂窝网络信号"
+          }
+        }
+      }
+    },
+    "RefreshCellularConnectionDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do not restart the cellular network service, just refresh the cellular network signal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不重启蜂窝网络服务，只刷新蜂窝网络信号"
+          }
+        }
+      }
+    },
+    "RefreshCellularConnectionMessage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh Cellular Connection?\nRefreshing the cellular connection may temporarily interrupt network connectivity."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确认刷新蜂窝网络信号？\n刷新蜂窝网络信号会暂时中断蜂窝网络连接。"
           }
         }
       }
@@ -850,22 +946,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "切换数据卡槽"
-          }
-        }
-      }
-    },
-    "SwitchFailed" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Switch Failed!"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "切换失败！"
           }
         }
       }
@@ -1187,6 +1267,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "版本"
+          }
+        }
+      }
+    },
+    "WaitingForRefresh" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Operation completed, waiting for refresh"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作完成，等待刷新"
           }
         }
       }

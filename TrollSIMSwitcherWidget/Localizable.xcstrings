@@ -39,6 +39,38 @@
         }
       }
     },
+    "RefreshCellularConnection" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh Cellular Connection"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刷新蜂窝网络信号"
+          }
+        }
+      }
+    },
+    "RefreshCellularConnectionDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do not restart the cellular network service, just refresh the cellular network signal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不重启蜂窝网络服务，只刷新蜂窝网络信号"
+          }
+        }
+      }
+    },
     "SwitchCellularPlan" : {
       "localizations" : {
         "en" : {

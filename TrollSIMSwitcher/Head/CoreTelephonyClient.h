@@ -65,7 +65,7 @@
 -(id)getEnglishCarrierNameFor:(id)arg1 error:(id*)arg2 ;
 -(id)getInternetConnectionStateSync:(id*)arg1 ;
 //-(id)getLocalizedOperatorName:(id)arg1 error:(id*)arg2;
-- (NSString *)getLocalizedOperatorName:(CTXPCServiceSubscriptionContext *)context error:(id*)error;
+- (NSString *)getLocalizedOperatorName:(CTXPCServiceSubscriptionContext *)context error:(NSError **)error; // 获取网络名称
 -(void)getRadioPersonality:(id)arg1 completion:(/*^block*/id)arg2 ;
 -(void)getStewieSupportWithCompletion:(/*^block*/id)arg1 ;
 -(void)getTransferPlansWithCompletion:(/*^block*/id)arg1 ;
@@ -171,7 +171,7 @@
 -(void)copyIsDataAttached:(id)arg1 completion:(/*^block*/id)arg2 ;
 -(id)copyIsInHomeCountry:(id)arg1 error:(id*)arg2 ;
 -(void)copyLabel:(CTXPCServiceSubscriptionContext *)context completion:(/*^block*/id)arg2 ;
--(NSString *)copyLabel:(CTXPCServiceSubscriptionContext *)context error:(id*)arg2 ;
+-(NSString *)copyLabel:(CTXPCServiceSubscriptionContext *)context error:(NSError **)error; // 同步方法 获取卡槽的标签
 -(void)copyLastKnownMobileCountryCode:(id)arg1 completion:(/*^block*/id)arg2 ;
 -(id)copyLastKnownMobileCountryCode:(id)arg1 error:(id*)arg2 ;
 -(void)copyLastKnownMobileSubscriberCountryCode:(id)arg1 completion:(/*^block*/id)arg2 ;
@@ -209,7 +209,7 @@
 -(id)copyRegistrationDisplayStatus:(id)arg1 error:(id*)arg2 ;
 -(void)copyRegistrationIMSTransportInfo:(id)arg1 completion:(/*^block*/id)arg2 ;
 //-(void)copyRegistrationStatus:(id)arg1 completion:(/*^block*/id)arg2;
--(NSString *)copyRegistrationStatus:(CTXPCServiceSubscriptionContext *) context error:(id*)arg2 ; // NSString
+- (NSString *)copyRegistrationStatus:(CTXPCServiceSubscriptionContext *) context error:(NSError **)error ; // 获取当前卡的注册状态
 -(void)copySIMIdentity:(id)arg1 completion:(/*^block*/id)arg2 ;
 -(id)copySIMIdentity:(id)arg1 error:(id*)arg2 ;
 -(void)copyServingPlmn:(id)arg1 completion:(/*^block*/id)arg2 ;
@@ -330,7 +330,7 @@
 -(id)getLocalPolicies:(id)arg1 error:(id*)arg2 ;
 -(void)getLowLatencyFilters:(int)arg1 queueSetId:(unsigned long long)arg2 completion:(/*^block*/id)arg3 ;
 -(void)getMaxDataRate:(id)arg1 completion:(/*^block*/id)arg2;
--(long long)getMaxDataRate:(CTXPCServiceSubscriptionContext *)context error:(id*)arg2; // 获取当前的网络类型
+-(long long)getMaxDataRate:(CTXPCServiceSubscriptionContext *)context error:(NSError **)error; // 获取当前的网络类型
 -(id)getMobileEquipmentInfo:(id*)arg1 ;
 -(id)getMobileEquipmentInfoFor:(id)arg1 error:(id*)arg2 ;
 -(void)getMobileSubscriberHomeCountryList:(id)arg1 completion:(/*^block*/id)arg2 ;
@@ -346,7 +346,7 @@
 -(void)getPNRContext:(id)arg1 completion:(/*^block*/id)arg2 ;
 -(id)getPNRContext:(id)arg1 outError:(id*)arg2 ;
 -(id)getPacketContextCount:(unsigned*)arg1 ;
--(CTPhoneNumberInfo *)getPhoneNumber:(CTXPCServiceSubscriptionContext *)context error:(id*)arg2 ;
+- (CTPhoneNumberInfo *)getPhoneNumber:(CTXPCServiceSubscriptionContext *)context error:(NSError **)error API_AVAILABLE(ios(13.0)); // 获取电话号码实例
 -(void)getPhoneNumberWithCompletion:(id)arg1 completion:(/*^block*/id)arg2 ;
 -(id)getPhoneServicesDeviceInfo:(id*)arg1 ;
 -(void)getPhoneServicesDeviceInfoWithCompletion:(/*^block*/id)arg1 ;
@@ -362,7 +362,7 @@
 -(void)getPreferredDataServiceDescriptor:(/*^block*/id)arg1 ;
 -(id)getPreferredDataServiceDescriptorSync:(id*)arg1 ;
 -(void)getPreferredDataSubscriptionContext:(/*^block*/id)arg1 ;
--(CTXPCServiceSubscriptionContext *)getPreferredDataSubscriptionContextSync:(id*)error; // 获取当前的数据卡context
+-(CTXPCServiceSubscriptionContext *)getPreferredDataSubscriptionContextSync:(NSError **)error; // 获取当前的数据卡context
 //-(SCD_Struct_Co16)getPrivacyProxyState:(id)arg1 error:(id*)arg2 ;
 -(void)getProximityTransportSession:(unsigned long long)arg1 remoteDeviceInfo:(id)arg2 completion:(/*^block*/id)arg3 ;
 -(void)getPublicDataBearer:(/*^block*/id)arg1 ;
@@ -390,7 +390,7 @@
 -(id)getResumableRoadsideProvider:(id*)arg1 ;
 -(void)getResumableRoadsideProviderWithCompletion:(/*^block*/id)arg1 ;
 -(void)getSIMStatus:(id)arg1 completion:(/*^block*/id)arg2 ;
--(NSString *)getSIMStatus:(CTXPCServiceSubscriptionContext *)context error:(id*)error; // 获取SIM卡状态
+- (NSString *)getSIMStatus:(CTXPCServiceSubscriptionContext *)context error:(NSError **)error; // 获取SIM卡状态
 -(id)getSIMToolkitListItems:(id)arg1 items:(id*)arg2 ;
 -(id)getSIMToolkitMenu:(id)arg1 menu:(id*)arg2 ;
 -(id)getSIMToolkitUSSDString:(id)arg1 ussdString:(id*)arg2 needRsp:(BOOL*)arg3 ;
@@ -420,7 +420,7 @@
 -(BOOL)getSupportDynamicDataSimSwitchOnBBCallSync:(id*)arg1 ;
 -(BOOL)getSupportDynamicDataSimSwitchSync:(id*)arg1 ;
 -(void)getSupportedDataRates:(id)arg1 completion:(/*^block*/id)arg2;
--(CTSupportedMaxDataRates *)getSupportedDataRates:(CTXPCServiceSubscriptionContext *)context error:(id*)arg2;
+- (CTSupportedMaxDataRates *)getSupportedDataRates:(CTXPCServiceSubscriptionContext *)context error:(NSError **)error; // 同步方法 获取支持蜂窝网络类型
 -(BOOL)getSupports5G:(CTXPCServiceSubscriptionContext *)context error:(id*)arg2; // 是否支持5G
 -(id)getSupports5GStandalone:(id)arg1 error:(id*)arg2; // 是否支持5G SA
 -(void)getSweetgumApps:(id)arg1 completion:(/*^block*/id)arg2 ;
@@ -463,7 +463,7 @@
 -(void)isEmergencyNumber:(id)arg1 number:(id)arg2 completion:(/*^block*/id)arg3 ;
 -(void)isEmergencyNumberWithWhitelistIncluded:(id)arg1 number:(id)arg2 completion:(/*^block*/id)arg3 ;
 -(BOOL)isEmergencyNumberWithWhitelistIncluded:(id)arg1 number:(id)arg2 error:(id*)arg3 ;
--(long long)isEsimFor:(id)arg1 error:(id*)arg2 ;
+-(long long)isEsimFor:(CTXPCServiceSubscriptionContext *)context error:(NSError **)error; // 获取卡槽中的卡类型
 -(id)isFactoryDebugEnabled:(id*)arg1 ;
 -(BOOL)isHighDataModeSupported:(id)arg1 error:(id*)arg2 ;
 -(void)isNetworkReselectionNeeded:(id)arg1 completion:(/*^block*/id)arg2 ;
@@ -558,9 +558,7 @@
 -(void)sendTaggedInfo:(id)arg1 type:(unsigned long long)arg2 payload:(id)arg3 completion:(/*^block*/id)arg4 ;
 -(void)setActiveBandInfo:(id)arg1 bands:(id)arg2 error:(id*)arg3 ;
 -(void)setActiveUserDataSelection:(CTXPCServiceSubscriptionContext *)context completion:(/*^block*/id)completion;
-//-(void)setActiveUserDataSelection:(CTXPCServiceSubscriptionContext *)context error:(NSError **)error;
-- (void)setActiveUserDataSelection:(CTXPCServiceSubscriptionContext *)context error:(NSError **)error;
-//-(void)setActiveUserDataSelection:(id)arg1 error:(id*)arg2;
+- (void)setActiveUserDataSelection:(CTXPCServiceSubscriptionContext *)context error:(NSError **)error; // 设置蜂窝数据首选卡
 -(id)setApplicationCategory:(id)arg1 ;
 -(void)setBandInfo:(id)arg1 bands:(id)arg2 completion:(/*^block*/id)arg3 ;
 -(void)setCoalescing:(BOOL)arg1 udp:(BOOL)arg2 completion:(/*^block*/id)arg3 ;
@@ -670,4 +668,10 @@
 -(id)wifiCallingCTFollowUpComplete:(id)arg1 ;
 - (NSString *)copyMobileEquipmentIdentifier:(id)ctx error:(NSError **)error;
 - (NSArray<NSString *> *)copyMobileEquipmentIdentifiers:(id)ctx error:(NSError **)error;
+
+// 扩展CoreTelephony的方法
+typedef struct _CTServerConnection *CTServerConnectionRef;
+extern CTServerConnectionRef _CTServerConnectionCreate(CFAllocatorRef allocator, void *arg1, void *arg2); // 创建CTServerConnection的方法
+extern void _CTServerConnectionResetModem(CTServerConnectionRef connection, CFStringRef reason); // 刷新信号
+
 @end

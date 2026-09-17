@@ -14,5 +14,6 @@ struct TrollSIMSwitcherWidgetBundle: WidgetBundle {
         TrollSIMSwitcherTurnOffCellularPlan()
         TrollSIMSwitcherToggleCellularPlan()
         TrollSIMSwitcherRebootCommCenter()
+        TrollSIMSwitcherRefreshCellularConnection()
     }
 }

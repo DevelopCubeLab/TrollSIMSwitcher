@@ -104,8 +104,13 @@ struct TrollSIMSwitcherCurrentCellularDataSlotIntent: AppIntent {
     static var resultType: Bool.Type { Bool.self }
     
     func perform() async throws -> some IntentResult & ReturnsValue<Int> {
-        let result = CoreTelephonyController.instance.getDataPreferredSlotID()
-        return .result(value: Int(result))
+        do {
+            let result = try CoreTelephonyController.instance.getDataPreferredSlotID()
+            return .result(value: Int(result))
+        } catch {
+            return .result(value: -1)
+        }
+        
     }
 }
 
@@ -117,8 +122,13 @@ struct TrollSIMSwitcherCurrentNetworkTypeIntent: AppIntent {
     static var resultType: Bool.Type { Bool.self }
     
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        let result = CellularUtils.getRateText(rate: Int(CoreTelephonyController.instance.getDataPreferredSlotRate()))
-        return .result(value: result)
+        do {
+            let result = try CellularUtils.getRateText(rate: Int(CoreTelephonyController.instance.getDataPreferredSlotRate()))
+            return .result(value: result)
+        } catch {
+            return .result(value: "nil")
+        }
+        
     }
 }
 
@@ -298,5 +308,23 @@ struct TrollSIMSwitcherRebootCommCenterIntent: AppIntent {
         let deviceController = DeviceController()
         let result = deviceController.rebootCommCenter()
         return .result(value: result)
+    }
+}
+
+// 刷新蜂窝网络信号
+@available(iOS 16, *)
+struct TrollSIMSwitcherRefreshCellularConnection: AppIntent {
+    static var title: LocalizedStringResource = "RefreshCellularConnection"
+    static var description = IntentDescription("RefreshCellularConnectionDescription")
+
+    static var resultType: Bool.Type { Bool.self }
+    
+    func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
+        if AppCapability.hasCommCenterSPI() {
+            CoreTelephonyController.instance.refreshCellularConnection()
+            return .result(value: true)
+        } else {
+            return .result(value: false)
+        }
     }
 }
