@@ -9,7 +9,7 @@ before-all::
 
 # 使用 Xcode 项目构建
 XCODEPROJ_NAME = TrollSIMSwitcher
-BUILD_VERSION = "1.2.1"
+BUILD_VERSION = "1.2.2"
 FILE_NAME = "com.developlab.trollsimswitcher"
 
 # 指定 Theos 使用 xcodeproj 规则

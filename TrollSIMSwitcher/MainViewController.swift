@@ -2,7 +2,7 @@ import UIKit
 
 class MainViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    static let versionCode = "1.2.1"
+    static let versionCode = "1.2.2"
     
     private var tableView = UITableView()
     
@@ -315,9 +315,6 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 switchView.tag = SettingsSwitchViewTag.EnableToggleCellularDataSlotNotifications.rawValue // 设置识别id
                 switchView.isOn = SettingsUtils.instance.getEnableToggleCellularDataSlotNotifications() // 从配置文件中获取状态
                 if SIMSlotList.count < 1 { // 只有单卡的情况
-                    if SettingsUtils.instance.getEnableToggleCellularDataSlotNotifications() {
-                        SettingsUtils.instance.setEnableToggleCellularDataSlotNotifications(enable: false) // 如果之前开启，现在条件不满足了，则关闭这组通知
-                    }
                     cell.textLabel?.textColor = .lightGray //文本变成灰色
                     switchView.isEnabled = false // 禁用开关
                 }
@@ -328,9 +325,6 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 let preferred = SIMSlotList.first(where: { $0.isDataPreferred })
                 if preferred != nil || SIMSlotList.isEmpty { // 获取首选数据卡
                     if preferred?.supportedRates?.rates.count ?? 0 < 2 { // 少于两个网络类型则不支持这组通知，没有什么意义
-                        if SettingsUtils.instance.getEnableToggleNetworkTypeNotifications() {
-                            SettingsUtils.instance.setEnableToggleNetworkTypeNotifications(enable: false) // 如果之前开启，现在条件不满足了，则关闭这组通知
-                        }
                         cell.textLabel?.textColor = .lightGray //文本变成灰色
                         switchView.isEnabled = false // 禁用开关
                     }
