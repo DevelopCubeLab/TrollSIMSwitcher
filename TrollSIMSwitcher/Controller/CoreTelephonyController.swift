@@ -72,6 +72,11 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         return result
     }
     
+    /// 获取当前卡槽的ICCID
+    func getSlotICCID(context: CTXPCServiceSubscriptionContext) throws -> String? {
+        return try coreTelephonyClient.copySIMIdentity(context)
+    }
+    
     /// 获取当前卡槽的卡标签
     /// 返回卡标签的文字
     func getSlotLabelText(context: CTXPCServiceSubscriptionContext) throws -> String {
@@ -270,6 +275,8 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
                     let slot = Int(context.slotID)
                     // 获取当前卡槽的UUID
                     let uuid = context.uuid ?? UUID()
+                    // 获取当前卡槽的ICCID
+                    let iccid = try getSlotICCID(context: context) ?? ""
                     // 获取当前卡标签
                     let label = try getSlotLabelText(context: context)
                     // 获取当前运营商的名称
@@ -295,7 +302,7 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
                     // 获取当前卡槽的IMEI
                     let IMEIValue = IMEIs.indices.contains(slot - 1) ? IMEIs[slot - 1].value : ""
                     
-                    slots.append(SIMSlot(slot: slot, uuid: uuid, label: label, operatorName: operatorName, phoneNumber: phoneNumber, registrationStatus: registrationStatus, isEnabled: isEnabled, isDataPreferred: isDataPreferred, supportedRates: supportedDataRates, currentRate: currentRate, supports5G: supported5G, IMEI: IMEIValue))
+                    slots.append(SIMSlot(slot: slot, uuid: uuid, ICCID: iccid, label: label, operatorName: operatorName, phoneNumber: phoneNumber, registrationStatus: registrationStatus, isEnabled: isEnabled, isDataPreferred: isDataPreferred, supportedRates: supportedDataRates, currentRate: currentRate, supports5G: supported5G, IMEI: IMEIValue))
                     
                 } catch {
                     //
@@ -307,6 +314,17 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         }
         
         return slots
+    }
+    
+    func getSlotCardICCID(slotID: Int) -> String {
+        do {
+            if let context = getServiceSubscriptionContext(slot: slotID) {
+                return try getSlotICCID(context: context) ?? ""
+            }
+        } catch {
+            return ""
+        }
+        return ""
     }
     
     // 获取全部已经启用的卡槽信息

@@ -30,13 +30,6 @@ class SettingsUtils {
         
     }
     
-    // 检查UnSandbox权限的方法
-    static func checkUnSandboxPermission() -> Bool {
-        let path = "/var/mobile/Library/Preferences"
-        let writeable = access(path, W_OK) == 0
-        return writeable
-    }
-    
     // 获取全部的选择的蜂窝数据套餐卡
     private func getSelectCellularPlans() -> [String : String] {
         let data =  plistManager.getDictionary(key: "SelectCellularPlans", defaultValue: [:])
@@ -214,6 +207,49 @@ class SettingsUtils {
         plistManager.apply()
     }
     
+    // 获取切换卡槽流量后的操作
+    // 默认为无操作
+    func getSwitchSlotExtraActions(iccid: String) -> [ExtraAction] {
+
+        let rules = plistManager.getDictionary(key: "SwitchSlotExtraActions", defaultValue: [:])
+
+        guard let values = rules[iccid] as? [Int] else {
+            return [.None]
+        }
+
+        let actions = values.compactMap {
+            ExtraAction(rawValue: $0)
+        }
+
+        return actions.isEmpty ? [.None] : actions
+    }
+
+    func setSwitchSlotExtraActions(iccid: String, actions: [ExtraAction]) {
+        let plist = PlistManagerUtils.instance(for: "Settings")
+
+        var rules = plist.getDictionary(key: "SwitchSlotExtraActions", defaultValue: [:])
+
+        // None 与其他 Action 互斥
+        let realActions: [ExtraAction]
+
+        if actions.contains(.None) {
+            realActions = []
+        } else {
+            realActions = actions
+        }
+
+        if realActions.isEmpty {
+            // None = 不设置任何额外操作
+            rules.removeValue(forKey: iccid)
+        } else {
+            rules[iccid] = realActions.map { $0.rawValue }
+        }
+
+        plist.setDictionary(key: "SwitchSlotExtraActions", value: rules)
+
+        plist.apply()
+    }
+    
     // 设置主屏幕快捷方式
     func setHomeScreenQuickActions(application: UIApplication) {
         if getEnableHomeScreenQuickActions() { // 检查是否开启桌面图标快捷方式
@@ -272,5 +308,7 @@ class SettingsUtils {
             application.shortcutItems = []
         }
     }
+    
+    
     
 }

@@ -49,6 +49,22 @@
         }
       }
     },
+    "AfterSwitching" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After Switching"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换后"
+          }
+        }
+      }
+    },
     "Alert" : {
       "localizations" : {
         "en" : {
@@ -259,6 +275,22 @@
         }
       }
     },
+    "DisableWi-FiAuto-Join" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disable Wi-Fi Auto-Join\n(AirDrop Keep)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭Wi-Fi连接\n(AirDrop保持开启)"
+          }
+        }
+      }
+    },
     "EmergencyOnly" : {
       "localizations" : {
         "en" : {
@@ -303,6 +335,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "如果无法正常切换蜂窝数据，请打开%@，否则请不要打开这个开关"
+          }
+        }
+      }
+    },
+    "EnableWi-FiAuto-Join" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable Wi-Fi Auto-Join"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开Wi-Fi连接"
           }
         }
       }
@@ -479,6 +527,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "没有选择蜂窝数据卡"
+          }
+        }
+      }
+    },
+    "None" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无"
           }
         }
       }
@@ -1158,6 +1222,22 @@
         }
       }
     },
+    "TurnOffWi-Fi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn Off Wi-Fi\n(AirDrop Off)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭Wi-Fi\n(AirDrop关闭)"
+          }
+        }
+      }
+    },
     "TurnOn" : {
       "localizations" : {
         "en" : {
@@ -1202,6 +1282,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "打开蜂窝数据卡"
+          }
+        }
+      }
+    },
+    "TurnOnWi-Fi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn On Wi-Fi"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开Wi-Fi"
           }
         }
       }

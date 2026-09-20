@@ -22,6 +22,8 @@
     	<string>preferences-write</string>
 		<string>cellular-plan</string>
 	</array>
+	<key>com.apple.wifi.manager-access</key>
+	<true/>
 	<key>com.apple.private.MobileGestalt.AllowedProtectedKeys</key>
 	<array>
 		<string>InternationalMobileEquipmentIdentity</string>

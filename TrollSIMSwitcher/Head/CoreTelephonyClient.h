@@ -211,7 +211,7 @@
 //-(void)copyRegistrationStatus:(id)arg1 completion:(/*^block*/id)arg2;
 - (NSString *)copyRegistrationStatus:(CTXPCServiceSubscriptionContext *) context error:(NSError **)error ; // 获取当前卡的注册状态
 -(void)copySIMIdentity:(id)arg1 completion:(/*^block*/id)arg2 ;
--(id)copySIMIdentity:(id)arg1 error:(id*)arg2 ;
+- (NSString *)copySIMIdentity:(CTXPCServiceSubscriptionContext *)context error:(NSError **)error; // 获取ICCID
 -(void)copyServingPlmn:(id)arg1 completion:(/*^block*/id)arg2 ;
 -(id)copyServingPlmn:(id)arg1 error:(id*)arg2 ;
 -(void)copyWirelessTechnology:(id)arg1 completion:(/*^block*/id)arg2 ;

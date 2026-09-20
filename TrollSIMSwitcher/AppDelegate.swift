@@ -68,21 +68,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             case "TrollSIMSwitcherSlot1", SettingsUtils.SwitchToSlot1ID: // 切换到卡槽1
                 if CoreTelephonyController.instance.setDataSlot(slot: 1) {
                     switchSlot = true
-                    switchSuccessful = true
+                    // 执行点击后的操作
+                    switchSuccessful = ExtraActionController.instance.performExtraActions(slotID: 1)
                 } else {
                     switchSuccessful = false
                 }
             case "TrollSIMSwitcherSlot2", SettingsUtils.SwitchToSlot2ID: // 切换到卡槽2
                 if CoreTelephonyController.instance.setDataSlot(slot: 2) {
                     switchSlot = true
-                    switchSuccessful = true
+                    // 执行点击后的操作
+                    switchSuccessful = ExtraActionController.instance.performExtraActions(slotID: 2)
                 } else {
                     switchSuccessful = false
                 }
             case "TrollSIMSwitcherToggleSlot": // 切换到另一个卡槽
                 if CoreTelephonyController.instance.toggleDataSlot() {
                     switchSlot = true
-                    switchSuccessful = true
+                    // 执行点击后的操作
+                    switchSuccessful = ExtraActionController.instance.performExtraActions(toggle: true)
                 } else {
                     switchSuccessful = false
                 }
@@ -152,15 +155,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         switch systemActionID {
         
         case UNNotificationDefaultActionIdentifier: // 用户点击通知本体
-
+            var slotID: Int?
             switch actionID {
             case NotificationController.switchToSlot1Identifier:
                 if CoreTelephonyController.instance.setDataSlot(slot: 1) {
+                    // 执行点击后的操作
+                    _ = ExtraActionController.instance.performExtraActions(slotID: 1)
+                    slotID = 1
                     // 判断是否退出app
                     UIUtils.exitApplicationAfterSwitching()
                 }
             case NotificationController.switchToSlot2Identifier:
                 if CoreTelephonyController.instance.setDataSlot(slot: 2) {
+                    // 执行点击后的操作
+                    _ = ExtraActionController.instance.performExtraActions(slotID: 2)
+                    slotID = 2
                     UIUtils.exitApplicationAfterSwitching()
                 }
             case NotificationController.switch3GIdentifier:
@@ -186,7 +195,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             default: break
             }
             // 补发通知
-            NotificationController.instance.sendNotifications(silentNotifications: true, groupIdentifier: groupID)
+            NotificationController.instance.sendNotifications(silentNotifications: true, groupIdentifier: groupID, switchedSlotID: slotID)
             
         case NotificationController.disableThisGroupNotificationsActionID: // 禁用当前的分组通知
             if let groupID {

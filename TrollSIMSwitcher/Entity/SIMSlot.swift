@@ -3,6 +3,7 @@ import Foundation
 class SIMSlot {
     let slot: Int // 所在卡槽
     let uuid: UUID // 卡槽的UUID
+    let ICCID: String // 卡槽的ICCID
     let label: String // 卡标签
     let operatorName: String // 卡当前运营商
     let phoneNumber: String? // 电话号码
@@ -14,9 +15,10 @@ class SIMSlot {
     let supports5G: Bool // 是否支持5G
     let IMEI: String? // 当前卡槽的IMEI
     
-    init(slot: Int, uuid: UUID, label: String, operatorName: String, phoneNumber: String?, registrationStatus: String, isEnabled: Bool, isDataPreferred: Bool, supportedRates: CTSupportedMaxDataRates?, currentRate: Int64, supports5G: Bool, IMEI: String?) {
+    init(slot: Int, uuid: UUID, ICCID: String, label: String, operatorName: String, phoneNumber: String?, registrationStatus: String, isEnabled: Bool, isDataPreferred: Bool, supportedRates: CTSupportedMaxDataRates?, currentRate: Int64, supports5G: Bool, IMEI: String?) {
         self.slot = slot
         self.uuid = uuid
+        self.ICCID = ICCID
         self.label = label
         self.operatorName = operatorName
         self.phoneNumber = phoneNumber

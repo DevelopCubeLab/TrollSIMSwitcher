@@ -2,7 +2,7 @@ import UIKit
 
 class MainViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    static let versionCode = "1.2.2"
+    static let versionCode = "1.3"
     
     private var tableView = UITableView()
     
@@ -24,6 +24,9 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     private static let aboutAtSection = 7
     
     private var SIMSlotList: [SIMSlot] = []
+    
+    // 是否长按展开了菜单
+    private var isContextMenuVisible = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -79,7 +82,9 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     @objc private func updateSIMList() {
         DispatchQueue.main.async {
             self.loadSIMSlots()
-            self.tableView.reloadData()
+            if !self.isContextMenuVisible { // 只有菜单没有展开的时候才刷新Cell
+                self.tableView.reloadData()
+            }
         }
     }
     
@@ -207,38 +212,35 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                     cell.textLabel?.textColor = .lightGray //文本变成灰色
                 } else {
                     // 设置开关卡槽
-                    if CoreTelephonyController.instance.hasAnyEnabledCellularPlan() {
-                        if let cellularPlan = CoreTelephonyController.instance.getCellularPlan(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
-                            let cellularPlanText: String
-                            if SettingsUtils.instance.getShowSlotLabel() { // 是否显示卡标签
-                                cellularPlanText = cellularPlan.label
-                            } else {
-                                cellularPlanText = cellularPlan.carrierName == "" ? NSLocalizedString("UnknownCarrier", comment: "") : cellularPlan.carrierName
-                            }
-                            if cellularPlan.isSelected {
-                                cell.textLabel?.text = String.localizedStringWithFormat(NSLocalizedString("TurnOffCellularPlan", comment: ""), cellularPlanText)
-                                cell.textLabel?.textColor = .systemRed //文本变成红色
-                                if !CoreTelephonyController.instance.canTurnOffCellularPlan() { // 如果不能关闭的情况不允许用户关闭最后一张蜂窝数据卡
-                                    // 禁用选择
-                                    cell.selectionStyle = .none
-                                    cell.isUserInteractionEnabled = false
-                                    cell.textLabel?.textColor = .lightGray //文本变成灰色
-                                }
-                            } else {
-                                cell.textLabel?.text = String.localizedStringWithFormat(NSLocalizedString("TurnOnCellularPlan", comment: ""), cellularPlanText)
-                                cell.textLabel?.textColor = .systemBlue //文本变成蓝色
-                            }
-                        } else { // 比如用户选择了某张卡，但是这张卡被移除了
-                            cell.textLabel?.text = NSLocalizedString("NoCellularPlanFound", comment: "")
-                            // 删除失效配置
-                            SettingsUtils.instance.removeSelectCellularPlan1()
-                            // 禁用选择
-                            cell.selectionStyle = .none
-                            cell.isUserInteractionEnabled = false
-                            cell.textLabel?.textColor = .lightGray //文本变成灰色
+                    if let cellularPlan = CoreTelephonyController.instance.getCellularPlan(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
+                        let cellularPlanText: String
+                        if SettingsUtils.instance.getShowSlotLabel() { // 是否显示卡标签
+                            cellularPlanText = cellularPlan.label
+                        } else {
+                            cellularPlanText = cellularPlan.carrierName == "" ? NSLocalizedString("UnknownCarrier", comment: "") : cellularPlan.carrierName
                         }
+                        if cellularPlan.isSelected {
+                            cell.textLabel?.text = String.localizedStringWithFormat(NSLocalizedString("TurnOffCellularPlan", comment: ""), cellularPlanText)
+                            cell.textLabel?.textColor = .systemRed //文本变成红色
+                            if !CoreTelephonyController.instance.canTurnOffCellularPlan() { // 如果不能关闭的情况不允许用户关闭最后一张蜂窝数据卡
+                                // 禁用选择
+                                cell.selectionStyle = .none
+                                cell.isUserInteractionEnabled = false
+                                cell.textLabel?.textColor = .lightGray //文本变成灰色
+                            }
+                        } else {
+                            cell.textLabel?.text = String.localizedStringWithFormat(NSLocalizedString("TurnOnCellularPlan", comment: ""), cellularPlanText)
+                            cell.textLabel?.textColor = .systemBlue //文本变成蓝色
+                        }
+                    } else { // 比如用户选择了某张卡，但是这张卡被移除了
+                        cell.textLabel?.text = NSLocalizedString("NoCellularPlanFound", comment: "")
+                        // 删除失效配置
+                        SettingsUtils.instance.removeSelectCellularPlan1()
+                        // 禁用选择
+                        cell.selectionStyle = .none
+                        cell.isUserInteractionEnabled = false
+                        cell.textLabel?.textColor = .lightGray //文本变成灰色
                     }
-                    
                 }
             } else {
                 cell.accessoryType = .disclosureIndicator
@@ -379,8 +381,10 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         if indexPath.section == 0 { // 切换数据流量卡
             if CoreTelephonyController.instance.setDataSlot(SIMSlot: SIMSlotList[indexPath.row]) {
+                // 执行点击后的操作
+                _ = ExtraActionController.instance.performExtraActions(iccid: SIMSlotList[indexPath.row].ICCID)
                 // 补发通知
-                NotificationController.instance.sendNotifications(silentNotifications: true, groupIdentifier: NotificationController.switchSlotGroupIdentifier)
+                NotificationController.instance.sendNotifications(silentNotifications: true, groupIdentifier: NotificationController.switchSlotGroupIdentifier, switchedSlotID: SIMSlotList[indexPath.row].slot)
             }
         } else if indexPath.section == 1 { // 切换网络类型
             
@@ -518,6 +522,118 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                     UIApplication.shared.open(url, options: [:], completionHandler: nil)
                 }
             }
+        }
+    }
+    
+    // MARK: - 长按 Cell 的菜单 (UIContextMenuConfiguration)
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        
+        if indexPath.section == 0 {
+            
+            let iccid = SIMSlotList[indexPath.row].ICCID
+            
+            let currentAction = SettingsUtils.instance.getSwitchSlotExtraActions(iccid: iccid).first ?? .None
+            
+            let noneAction = UIAction(
+                title: NSLocalizedString("None", comment: ""),
+                image: nil,
+                state: currentAction == .None ? .on : .off
+            ) { _ in
+                SettingsUtils.instance.setSwitchSlotExtraActions(
+                    iccid: iccid,
+                    actions: [.None]
+                )
+            }
+            
+            let turnOffWiFiAction = UIAction(
+                title: NSLocalizedString("TurnOffWi-Fi", comment: ""),
+                image: UIImage(systemName: "wifi.slash"),
+                state: currentAction == .TurnOffWiFi ? .on : .off
+            ) { _ in
+                SettingsUtils.instance.setSwitchSlotExtraActions(
+                    iccid: iccid,
+                    actions: [.TurnOffWiFi]
+                )
+            }
+            
+            let turnOnWiFiAction = UIAction(
+                title: NSLocalizedString("TurnOnWi-Fi", comment: ""),
+                image: UIImage(systemName: "wifi"),
+                state: currentAction == .TurnOnWiFi ? .on : .off
+            ) { _ in
+                SettingsUtils.instance.setSwitchSlotExtraActions(
+                    iccid: iccid,
+                    actions: [.TurnOnWiFi]
+                )
+            }
+            
+            let disableWiFiConnectAction = UIAction(
+                title: NSLocalizedString("DisableWi-FiAuto-Join", comment: ""),
+                image: UIImage(systemName: "wifi.slash"),
+                state: currentAction == .DisableWiFiConnect ? .on : .off
+            ) { _ in
+                SettingsUtils.instance.setSwitchSlotExtraActions(
+                    iccid: iccid,
+                    actions: [.DisableWiFiConnect]
+                )
+            }
+            
+            let enableWiFiConnectAction = UIAction(
+                title: NSLocalizedString("EnableWi-FiAuto-Join", comment: ""),
+                image: UIImage(systemName: "wifi"),
+                state: currentAction == .EnableWiFiConnect ? .on : .off
+            ) { _ in
+                SettingsUtils.instance.setSwitchSlotExtraActions(
+                    iccid: iccid,
+                    actions: [.EnableWiFiConnect]
+                )
+            }
+            
+            let menu = UIMenu(
+                title: NSLocalizedString("AfterSwitching", comment: ""),
+                children: [
+                    UIMenu(
+                        options: .displayInline,
+                        children: [
+                            noneAction
+                        ]
+                    ),
+                    UIMenu(
+                        options: .displayInline,
+                        children: [
+                            turnOffWiFiAction,
+                            turnOnWiFiAction
+                        ]
+                    ),
+                    UIMenu(
+                        options: .displayInline,
+                        children: [
+                            disableWiFiConnectAction,
+                            enableWiFiConnectAction
+                        ]
+                    )
+                ]
+            )
+            
+            return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+                return menu
+            }
+        }
+        
+        return nil
+    }
+    
+    // MARK: - 展开菜单前
+    func tableView(_ tableView: UITableView, willDisplayContextMenu configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating?) {
+        isContextMenuVisible = true
+    }
+
+    // MARK: - 菜单关闭后
+    func tableView(_ tableView: UITableView, willEndContextMenuInteraction configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating?) {
+        animator?.addCompletion { [weak self] in
+            self?.isContextMenuVisible = false
+            // 顺手刷新下
+            tableView.reloadData()
         }
     }
     

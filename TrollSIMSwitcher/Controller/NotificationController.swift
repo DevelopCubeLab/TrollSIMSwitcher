@@ -210,7 +210,7 @@ class NotificationController {
     
     // 给外部访问的发送通知的方法，不需要每个地方都单独写了
     
-    func sendNotifications(silentNotifications: Bool, groupIdentifier: String? = nil) {
+    func sendNotifications(silentNotifications: Bool, groupIdentifier: String? = nil, switchedSlotID: Int? = nil) {
         
         // 获取SIM卡数据
         let SIMSlotList = CoreTelephonyController.instance.getAllEnabledSlots()
@@ -224,10 +224,8 @@ class NotificationController {
         // 发送切换卡槽的通知
         if SettingsUtils.instance.getEnableToggleCellularDataSlotNotifications() {
             if let slot = SIMSlotList.first(where: {
-                if let groupID = groupIdentifier {
-                    if groupID == NotificationController.switchSlotGroupIdentifier {
-                        return $0.isDataPreferred // 如果是切换数据流量卡 那就选择当前的卡，因为基带还没刷新
-                    }
+                if groupIdentifier == NotificationController.switchSlotGroupIdentifier, let switchedSlotID = switchedSlotID {
+                    return $0.slot != switchedSlotID
                 }
                 return !$0.isDataPreferred // 选择另一张卡，因为我们要切换过去
 //                !$0.isDataPreferred
@@ -246,10 +244,8 @@ class NotificationController {
         // 发送切换蜂窝数据类型的通知
         if SettingsUtils.instance.getEnableToggleNetworkTypeNotifications() {
             if let dataSlot = SIMSlotList.first(where: {
-                if let groupID = groupIdentifier {
-                    if groupID == NotificationController.switchSlotGroupIdentifier {
-                        return !$0.isDataPreferred // 如果是切换数据流量卡 那就选择另外一个，否则就是选择自己
-                    }
+                if groupIdentifier == NotificationController.switchSlotGroupIdentifier, let switchedSlotID = switchedSlotID {
+                    return $0.slot == switchedSlotID
                 }
                 return $0.isDataPreferred
             }) { // 获取首选数据卡
