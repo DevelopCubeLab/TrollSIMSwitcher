@@ -66,7 +66,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             
             switch itemID {
             case "TrollSIMSwitcherSlot1", SettingsUtils.SwitchToSlot1ID: // 切换到卡槽1
-                if CoreTelephonyController.instance.setDataSlot(slot: 1) {
+                if CellularController.instance.setDataSlot(slot: 1) {
                     switchSlot = true
                     // 执行点击后的操作
                     switchSuccessful = ExtraActionController.instance.performExtraActions(slotID: 1)
@@ -74,7 +74,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     switchSuccessful = false
                 }
             case "TrollSIMSwitcherSlot2", SettingsUtils.SwitchToSlot2ID: // 切换到卡槽2
-                if CoreTelephonyController.instance.setDataSlot(slot: 2) {
+                if CellularController.instance.setDataSlot(slot: 2) {
                     switchSlot = true
                     // 执行点击后的操作
                     switchSuccessful = ExtraActionController.instance.performExtraActions(slotID: 2)
@@ -82,7 +82,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     switchSuccessful = false
                 }
             case "TrollSIMSwitcherToggleSlot": // 切换到另一个卡槽
-                if CoreTelephonyController.instance.toggleDataSlot() {
+                if CellularController.instance.toggleDataSlot() {
                     switchSlot = true
                     // 执行点击后的操作
                     switchSuccessful = ExtraActionController.instance.performExtraActions(toggle: true)
@@ -90,31 +90,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     switchSuccessful = false
                 }
             case "TrollSIMSwitcherToggleNetworkType": // 自动切换4G/5G
-                switchSuccessful = CoreTelephonyController.instance.toggleDataPreferredRate()
+                switchSuccessful = CellularController.instance.toggleDataPreferredRate()
             case "TrollSIMSwitcher4G", SettingsUtils.SwitchTo4GID:    // 切换到4G
-                switchSuccessful = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._4G)
+                switchSuccessful = CellularController.instance.setDataPreferredRate(selectRate: ._4G)
             case "TrollSIMSwitcher5G", SettingsUtils.SwitchTo5GID:    // 切换到5G
-                switchSuccessful = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._5G)
+                switchSuccessful = CellularController.instance.setDataPreferredRate(selectRate: ._5G)
             case SettingsUtils.SwitchTo2GID: // 切换到2G
-                switchSuccessful = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._2G)
+                switchSuccessful = CellularController.instance.setDataPreferredRate(selectRate: ._2G)
             case SettingsUtils.SwitchTo3GID: // 切换到3G
-                switchSuccessful = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._3G)
+                switchSuccessful = CellularController.instance.setDataPreferredRate(selectRate: ._3G)
             case "TrollSIMSwitcherTurnOnCellularPlan": // 打开蜂窝数据卡
-                switchSuccessful = CoreTelephonyController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: true)
+                switchSuccessful = CellularController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: true)
             case "TrollSIMSwitcherTurnOffCellularPlan": // 关闭蜂窝数据卡
-                switchSuccessful = CoreTelephonyController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: false)
+                switchSuccessful = CellularController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: false)
             case "TrollSIMSwitcherToggleCellularPlan": // 切换蜂窝数据卡状态
-                switchSuccessful = CoreTelephonyController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1())
+                switchSuccessful = CellularController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1())
             case "TrollSIMSwitcherRebootCommCenter": // 重启基带服务
                 let deviceController = DeviceController()
                 switchSuccessful = deviceController.rebootCommCenter()
             case "TrollSIMSwitcherRefreshCellularConnection": // 刷新蜂窝网络信号
-                if AppCapability.hasCommCenterSPI() { // 该API不会抛异常 无权限只是被CommCenter丢弃请求 需要手动判断
-                    CoreTelephonyController.instance.refreshCellularConnection()
-                    switchSuccessful = true
-                } else {
-                    switchSuccessful = false
-                }
+                switchSuccessful =  CellularController.instance.refreshCellularConnection()
             default: return
             }
             
@@ -158,7 +153,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             var slotID: Int?
             switch actionID {
             case NotificationController.switchToSlot1Identifier:
-                if CoreTelephonyController.instance.setDataSlot(slot: 1) {
+                if CellularController.instance.setDataSlot(slot: 1) {
                     // 执行点击后的操作
                     _ = ExtraActionController.instance.performExtraActions(slotID: 1)
                     slotID = 1
@@ -166,30 +161,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     UIUtils.exitApplicationAfterSwitching()
                 }
             case NotificationController.switchToSlot2Identifier:
-                if CoreTelephonyController.instance.setDataSlot(slot: 2) {
+                if CellularController.instance.setDataSlot(slot: 2) {
                     // 执行点击后的操作
                     _ = ExtraActionController.instance.performExtraActions(slotID: 2)
                     slotID = 2
                     UIUtils.exitApplicationAfterSwitching()
                 }
             case NotificationController.switch3GIdentifier:
-                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: DataRates._3G) {
+                if CellularController.instance.setDataPreferredRate(selectRate: DataRates._3G) {
                     UIUtils.exitApplicationAfterSwitching()
                 }
             case NotificationController.switch4GIdentifier:
-                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: DataRates._4G) {
+                if CellularController.instance.setDataPreferredRate(selectRate: DataRates._4G) {
                     UIUtils.exitApplicationAfterSwitching()
                 }
             case NotificationController.switch5GIdentifier:
-                if CoreTelephonyController.instance.setDataPreferredRate(selectRate: DataRates._5G) {
+                if CellularController.instance.setDataPreferredRate(selectRate: DataRates._5G) {
                     UIUtils.exitApplicationAfterSwitching()
                 }
             case NotificationController.turnOnCellularPlanIdentifier:
-                if CoreTelephonyController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: true) {
+                if CellularController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: true) {
                     UIUtils.exitApplicationAfterSwitching()
                 }
             case NotificationController.turnOffCellularPlanIdentifier:
-                if CoreTelephonyController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: false) {
+                if CellularController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: false) {
                     UIUtils.exitApplicationAfterSwitching()
                 }
             default: break

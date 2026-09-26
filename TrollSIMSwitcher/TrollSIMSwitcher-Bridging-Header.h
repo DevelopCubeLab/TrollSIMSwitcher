@@ -9,6 +9,7 @@
 #import "Head/CTXPCServiceSubscriptionContext.h"
 #import "Head/CTSupportedMaxDataRates.h"
 #import "Head/CTPhoneNumberInfo.h"
+#import "Head/CTMobileEquipmentInfoList.h"
 #import "Head/CoreTelephonyClientDelegate.h"
 #import "Head/CTCellularPlanManager.h"
 #import "Head/CTCellularPlanItem.h"

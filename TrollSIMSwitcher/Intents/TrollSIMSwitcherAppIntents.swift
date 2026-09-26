@@ -11,7 +11,7 @@ struct TrollSIMSwitcherSlot1Intent: AppIntent {
     static var resultType: Bool.Type { Bool.self }
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let result = CoreTelephonyController.instance.setDataSlot(slot: 1)
+        let result = CellularController.instance.setDataSlot(slot: 1)
         // 刷新通知
         NotificationController.instance.sendNotifications(silentNotifications: true)
         return .result(value: result)
@@ -26,7 +26,7 @@ struct TrollSIMSwitcherSlot2Intent: AppIntent {
     static var resultType: Bool.Type { Bool.self }
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let result = CoreTelephonyController.instance.setDataSlot(slot: 2)
+        let result = CellularController.instance.setDataSlot(slot: 2)
         // 刷新通知
         NotificationController.instance.sendNotifications(silentNotifications: true)
         return .result(value: result)
@@ -41,7 +41,7 @@ struct TrollSIMSwitcherToggleSlotIntent: AppIntent {
     static var resultType: Bool.Type { Bool.self }
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let result = CoreTelephonyController.instance.toggleDataSlot()
+        let result = CellularController.instance.toggleDataSlot()
         // 刷新通知
         NotificationController.instance.sendNotifications(silentNotifications: true)
         return .result(value: result)
@@ -57,7 +57,7 @@ struct TrollSIMSwitcherNetwork4GIntent: AppIntent {
     static var resultType: Bool.Type { Bool.self }
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let result = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._4G)
+        let result = CellularController.instance.setDataPreferredRate(selectRate: ._4G)
         // 刷新通知
         NotificationController.instance.sendNotifications(silentNotifications: true)
         return .result(value: result)
@@ -73,7 +73,7 @@ struct TrollSIMSwitcherNetwork5GIntent: AppIntent {
     static var resultType: Bool.Type { Bool.self }
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let result = CoreTelephonyController.instance.setDataPreferredRate(selectRate: ._5G)
+        let result = CellularController.instance.setDataPreferredRate(selectRate: ._5G)
         // 刷新通知
         NotificationController.instance.sendNotifications(silentNotifications: true)
         return .result(value: result)
@@ -89,7 +89,7 @@ struct TrollSIMSwitcherToggleNetworkTypeIntent: AppIntent {
     static var resultType: Bool.Type { Bool.self }
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let result = CoreTelephonyController.instance.toggleDataPreferredRate()
+        let result = CellularController.instance.toggleDataPreferredRate()
         // 刷新通知
         NotificationController.instance.sendNotifications(silentNotifications: true)
         return .result(value: result)
@@ -104,13 +104,11 @@ struct TrollSIMSwitcherCurrentCellularDataSlotIntent: AppIntent {
     static var resultType: Bool.Type { Bool.self }
     
     func perform() async throws -> some IntentResult & ReturnsValue<Int> {
-        do {
-            let result = try CoreTelephonyController.instance.getDataPreferredSlotID()
-            return .result(value: Int(result))
-        } catch {
+        if let result = CellularController.instance.getDataPreferredSlotID() {
+            return .result(value: result)
+        } else {
             return .result(value: -1)
         }
-        
     }
 }
 
@@ -122,13 +120,11 @@ struct TrollSIMSwitcherCurrentNetworkTypeIntent: AppIntent {
     static var resultType: Bool.Type { Bool.self }
     
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        do {
-            let result = try CellularUtils.getRateText(rate: Int(CoreTelephonyController.instance.getDataPreferredSlotRate()))
-            return .result(value: result)
-        } catch {
+        if let rate = CellularController.instance.getDataPreferredSlotRate() {
+            return .result(value: CellularUtils.getRateText(rate: rate))
+        } else {
             return .result(value: "nil")
         }
-        
     }
 }
 
@@ -145,7 +141,7 @@ struct TrollSIMSwitcherTurnOnCellularPlanIntent: AppIntent {
         if planID.isEmpty {
             result = false
         } else {
-            result = CoreTelephonyController.instance.setCellularPlanEnable(planID: planID, enable: true)
+            result = CellularController.instance.setCellularPlanEnable(planID: planID, enable: true)
         }
         return .result(value: result)
     }
@@ -161,10 +157,10 @@ struct TrollSIMSwitcherTurnOffCellularPlanIntent: AppIntent {
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
         let planID = SettingsUtils.instance.getSelectCellularPlan1()
         let result: Bool
-        if planID.isEmpty || !CoreTelephonyController.instance.canTurnOffCellularPlan() {
+        if planID.isEmpty {
             result = false
         } else {
-            result = CoreTelephonyController.instance.setCellularPlanEnable(planID: planID, enable: false)
+            result = CellularController.instance.setCellularPlanEnable(planID: planID, enable: false)
         }
         return .result(value: result)
     }
@@ -180,10 +176,10 @@ struct TrollSIMSwitcherToggleCellularPlanIntent: AppIntent {
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
         let planID = SettingsUtils.instance.getSelectCellularPlan1()
         let result: Bool
-        if planID.isEmpty || !CoreTelephonyController.instance.canTurnOffCellularPlan() {
+        if planID.isEmpty {
             result = false
         } else {
-            result = CoreTelephonyController.instance.setCellularPlanEnable(planID: planID, enable: false)
+            result = CellularController.instance.setCellularPlanEnable(planID: planID, enable: false)
         }
         return .result(value: result)
     }
@@ -237,7 +233,7 @@ struct CellularPlanEntity: AppEntity { // 定义蜂窝数据卡给用户选择
 struct CellularPlanQuery: EntityQuery { // 创建一个查询
 
     func entities(for identifiers: [String]) async throws -> [CellularPlanEntity] {
-        let plans = CoreTelephonyController.instance.getCellularPlans()
+        let plans = CellularController.instance.getCellularPlans()
         return plans
             .filter { identifiers.contains($0.identifier) }
             .map {
@@ -249,7 +245,7 @@ struct CellularPlanQuery: EntityQuery { // 创建一个查询
     }
 
     func suggestedEntities() async throws -> [CellularPlanEntity] {
-        let plans = CoreTelephonyController.instance.getCellularPlans()
+        let plans = CellularController.instance.getCellularPlans()
         return plans.map {
             CellularPlanEntity(
                 id: $0.identifier,
@@ -278,7 +274,7 @@ struct TrollSIMSwitcherManageCellularPlanIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
 
-        let controller = CoreTelephonyController.instance
+        let controller = CellularController.instance
 
         let result: Bool
         switch action {
@@ -320,11 +316,6 @@ struct TrollSIMSwitcherRefreshCellularConnection: AppIntent {
     static var resultType: Bool.Type { Bool.self }
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        if AppCapability.hasCommCenterSPI() {
-            CoreTelephonyController.instance.refreshCellularConnection()
-            return .result(value: true)
-        } else {
-            return .result(value: false)
-        }
+        return .result(value: CellularController.instance.refreshCellularConnection())
     }
 }

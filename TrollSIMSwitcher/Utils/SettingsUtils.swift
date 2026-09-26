@@ -255,7 +255,7 @@ class SettingsUtils {
         if getEnableHomeScreenQuickActions() { // 检查是否开启桌面图标快捷方式
             var shortcutItems: [UIApplicationShortcutItem] = []
             // 获取全部卡槽信息
-            var SIMSlotList = CoreTelephonyController.instance.getAllSIMSlots()
+            var SIMSlotList = CellularController.instance.getAllSIMSlots()
             if  SIMSlotList.isEmpty { // 没拿到数据，要么是不支持的设备要么就是没权限
 //                setEnableHomeScreenQuickActions(enable: false)
                 application.shortcutItems = []

@@ -14,7 +14,7 @@ class SelectCellularPlanViewController: UIViewController, UITableViewDelegate, U
         navigationItem.title = NSLocalizedString("SelectCellularPlan", comment: "")
         
         // 获取设备的蜂窝数据套餐卡
-        cellularPlanItems = CoreTelephonyController.instance.getCellularPlans()
+        cellularPlanItems = CellularController.instance.getCellularPlans()
         
         // iOS 15 之后的版本使用新的UITableView样式
         if #available(iOS 15.0, *) {

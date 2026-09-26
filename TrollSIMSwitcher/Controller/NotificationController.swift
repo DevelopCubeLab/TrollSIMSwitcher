@@ -213,7 +213,7 @@ class NotificationController {
     func sendNotifications(silentNotifications: Bool, groupIdentifier: String? = nil, switchedSlotID: Int? = nil) {
         
         // 获取SIM卡数据
-        let SIMSlotList = CoreTelephonyController.instance.getAllEnabledSlots()
+        let SIMSlotList = CellularController.instance.getAllEnabledSlots()
         
         // 删除全部通知
         clearAllNotifications()
@@ -262,23 +262,19 @@ class NotificationController {
         // 发送切换蜂窝数据卡类型的通知
         if SettingsUtils.instance.getEnableToggleCellularPlanNotifications() {
             if !SettingsUtils.instance.getSelectCellularPlan1().isEmpty { // 必须设定过蜂窝数据卡才能给发送通知
-                if CoreTelephonyController.instance.hasAnyEnabledCellularPlan() {
-                    if let cellularPlan = CoreTelephonyController.instance.getCellularPlan(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
-                        let cellularPlanText: String
-                        if SettingsUtils.instance.getShowSlotLabel() { // 是否显示卡标签
-                            cellularPlanText = cellularPlan.label
-                        } else {
-                            cellularPlanText = cellularPlan.carrierName == "" ? NSLocalizedString("UnknownCarrier", comment: "") : cellularPlan.carrierName
-                        }
-                        if cellularPlan.isSelected {
-                            if CoreTelephonyController.instance.canTurnOffCellularPlan() { // 只允许能关闭的情况下发送通知
-                                // 发送关闭数据卡通知
-                                postNotification(title: String.localizedStringWithFormat(NSLocalizedString("TurnOffCellularPlan", comment: ""), cellularPlanText), groupIdentifier: NotificationController.switchCellularPlanGroupIdentifier, actionIdentifier: NotificationController.turnOffCellularPlanIdentifier)
-                            }
-                        } else {
-                            // 发送启用数据卡通知
-                            postNotification(title: String.localizedStringWithFormat(NSLocalizedString("TurnOnCellularPlan", comment: ""), cellularPlanText), groupIdentifier: NotificationController.switchCellularPlanGroupIdentifier, actionIdentifier: NotificationController.turnOnCellularPlanIdentifier)
-                        }
+                if let cellularPlan = CellularController.instance.getCellularPlan(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
+                    let cellularPlanText: String
+                    if SettingsUtils.instance.getShowSlotLabel() { // 是否显示卡标签
+                        cellularPlanText = cellularPlan.label
+                    } else {
+                        cellularPlanText = cellularPlan.carrierName == "" ? NSLocalizedString("UnknownCarrier", comment: "") : cellularPlan.carrierName
+                    }
+                    if cellularPlan.isSelected {
+                        // 发送关闭数据卡通知
+                        postNotification(title: String.localizedStringWithFormat(NSLocalizedString("TurnOffCellularPlan", comment: ""), cellularPlanText), groupIdentifier: NotificationController.switchCellularPlanGroupIdentifier, actionIdentifier: NotificationController.turnOffCellularPlanIdentifier)
+                    } else {
+                        // 发送启用数据卡通知
+                        postNotification(title: String.localizedStringWithFormat(NSLocalizedString("TurnOnCellularPlan", comment: ""), cellularPlanText), groupIdentifier: NotificationController.switchCellularPlanGroupIdentifier, actionIdentifier: NotificationController.turnOnCellularPlanIdentifier)
                     }
                 }
             }

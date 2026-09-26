@@ -1,5 +1,4 @@
 import Foundation
-import UIKit
 import CoreTelephony
 
 class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTelephonyClientDataDelegateInternal, CoreTelephonyClientRegistrationDelegateInternal, CTTelephonyNetworkInfoDelegate {
@@ -7,34 +6,76 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
     // 单例实例
     static let instance = CoreTelephonyController()
     
-    //CoreTelephonyClient 实例
+    // CoreTelephonyClient 实例
     private let coreTelephonyClient: CoreTelephonyClient = CoreTelephonyClient()
     // 创建CTServerConnection 实例
     private let connection: CTServerConnectionRef
     private let networkInfo = CTTelephonyNetworkInfo()
-    private let cellularPlanManager: CTCellularPlanManager = CTCellularPlanManager.shared()
-    
-    private var IMEIs: [IMEI] = []
-    private var plans: [CTCellularPlanItem] = []
-    private var lastFetchPlansTimeStamp: Int = 0
     
     private override init() {
         // 创建 CTServerConnection 连接
         self.connection = _CTServerConnectionCreate(kCFAllocatorDefault, nil, nil)
         super.init()
-        IMEIs = MGDeviceInfoController.instance.IMEIs
         coreTelephonyClient.setDelegate(self)
         networkInfo.delegate = self
-        loadCellularPlans() // 获取一次蜂窝数据卡
+    }
+    
+    /// 获取设备的卡槽数量
+    /// 用于判断设备有几个IMEI
+    /// 返回卡槽数量
+    func getDeviceSlotCount() -> Int {
+        do {
+            return try getDeviceInfoList().meInfoList.count
+        } catch {
+            return 0
+        }
+    }
+    
+    // 获取全部IMEI列表
+    private func getDeviceIMEI(number: Int) -> String? {
+        // 获取是否存在设备信息
+        guard let list = try? getDeviceInfoList().meInfoList else {
+            return nil
+        }
+        
+        let index = number - 1
+        // 判断获取的IMEI是否越界
+        guard index >= 0 && index < list.count else {
+            return nil
+        }
+        // 获取IMEI并且返回
+        return list[index].imei
+    }
+    
+    /// 获取设备的IMEI 1
+    /// 支持蜂窝网络的机器+有权限会返回
+    func getDeviceIMEI1() -> String? {
+        return getDeviceIMEI(number: 1)
+    }
+    
+    /// 获取设备的IMEI 2
+    /// 部分设备无IMEI 2
+    /// 比如老款设备XS之前的设备，还有CH/A的 XS、SE 2、SE 3、12 mini、13 mini，还有蜂窝版iPad
+    func getDeviceIMEI2() -> String? {
+        return getDeviceIMEI(number: 2)
+    }
+    
+    /// 获取设备基本信息的列表
+    /// 包括卡槽的基本IMEI信息
+    /// 包括EID和MEID(老设备可选)
+    /// 获取卡槽的设备信息用 getSlotMobileEquipmentInfo
+    /// 无权限时抛异常 错误代码 1
+    func getDeviceInfoList() throws -> CTMobileEquipmentInfoList {
+        return try coreTelephonyClient.getMobileEquipmentInfo()
     }
 
-    // 根据slot获取当前插槽的上下文
-    private func getServiceSubscriptionContext(slot: Int) -> CTXPCServiceSubscriptionContext? {
+    // 根据slot获取当前插槽的Context
+    func getServiceSubscriptionContext(slot: Int) -> CTXPCServiceSubscriptionContext? {
         return CTXPCServiceSubscriptionContext(slot: Int32(slot))
     }
     
-    // 根据slot的uuid获取当前插槽的上下文
-    private func getServiceSubscriptionContext(uuid: UUID) -> CTXPCServiceSubscriptionContext? {
+    // 根据slot的uuid获取当前插槽的Context
+    func getServiceSubscriptionContext(uuid: UUID) -> CTXPCServiceSubscriptionContext? {
         return CTXPCServiceSubscriptionContext(uuid: uuid)
     }
     
@@ -55,7 +96,10 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
     
     // 获取当前首选卡槽支持的网络类型
     func getDataPreferredSlotSupportRates() throws -> [Int64] {
-        return try coreTelephonyClient.getSupportedDataRates(getDataPreferredContext()).rates as! [Int64]
+        if let rates = try coreTelephonyClient.getSupportedDataRates(getDataPreferredContext()).rates as? [Int64] {
+            return rates
+        }
+        return []
     }
     
     /// 获取卡槽首选网络类型
@@ -142,6 +186,14 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         return try coreTelephonyClient.copyRegistrationStatus(context)
     }
     
+    func setActiveUserDataSelection(context: CTXPCServiceSubscriptionContext) throws {
+        var error: NSError? // 创建一个接收错误信息的对象
+        coreTelephonyClient.setActiveUserDataSelection(context, error: &error)
+        if let error = error { // 判断是否有错误 有错误就抛异常给上层
+            throw error
+        }
+    }
+    
     /// 刷新蜂窝网络信号
     /// 无权限设备会被CommCenter抛弃请求
     func refreshCellularConnection() {
@@ -151,121 +203,15 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         _CTServerConnectionResetModem(connection, reason)
     }
     
-    // 加载全部数据流量卡
-    private func loadCellularPlans() {
-        
-        // 缓存如果大于30s就去获取一次新的数据
-        if (Int(Date().timeIntervalSince1970) - lastFetchPlansTimeStamp) > 30 {
-            let sema = DispatchSemaphore(value: 0) // 创建一个信号量为 0 的锁
-
-            cellularPlanManager.planItems { items in
-                self.plans = items ?? []
-                sema.signal() // 继续线程
-            }
-
-//            sema.wait() // 挂起线程
-            
-            let result = sema.wait(timeout: .now() + 1.0)
-            if result == .timedOut { // 处理超时的问题
-                plans = []
-            }
-            
-            lastFetchPlansTimeStamp = Int(Date().timeIntervalSince1970) // 把当前的时间戳写入，作为判断缓存的标志
-        }
-    }
-    
-    // 获取全部蜂窝数据卡
-    func getCellularPlans() -> [CTCellularPlanItem] {
-        loadCellularPlans()
-        return plans
-    }
-    
-    // 获取某个蜂窝数据卡
-    func getCellularPlan(planID: String) -> CTCellularPlanItem? {
-        loadCellularPlans()
-        return plans.filter{ $0.identifier == planID }.first
-    }
-    
-    // 设置蜂窝数据卡启用或者关闭
-    func setCellularPlanEnable(planID: String, enable: Bool) -> Bool {
-        let plan = getCellularPlan(planID: planID)
-        if plan != nil {
-            if !enable { // 前置检查
-                if !canTurnOffCellularPlan() {
-                    return false
-                }
-            }
-            if plan?.isSelected == enable { // 同一个状态就不用切换了
-                return true
-            }
-            cellularPlanManager.didSelectPlanItem(plan, isEnable: enable)
-            // 设置缓存失效，这样就可以立刻刷新数据卡数据
-            lastFetchPlansTimeStamp = 0
-            return true
-        }
-        return false
-    }
-    
-    func toggleCellularPlanEnable(planID: String) -> Bool {
-        let plan = getCellularPlan(planID: planID)
-        if let plan = plan {
-            let enable = !plan.isSelected
-            if !enable { // 即将关闭，进行前置检查
-                if !canTurnOffCellularPlan() {
-                    return false
-                }
-            }
-            cellularPlanManager.didSelectPlanItem(plan, isEnable: enable)
-            // 设置缓存失效，这样就可以立刻刷新数据卡数据
-            lastFetchPlansTimeStamp = 0
-            return true
-        }
-        return false
-    }
-    
-    // 判断是否有已经启用的蜂窝数据套餐
-    func hasAnyEnabledCellularPlan() -> Bool {
-        return getCellularPlans().contains(where: { $0.isSelected })
-    }
-    
-    /// 判断用户是否有权利管理蜂窝数据卡
-    /// ⚠️ System limitation:
-    /// Disabling the last active cellular plan via CTCellularPlanManager
-    /// will cause CommCenter to enter an invalid state and crash the app.
-    /// This operation is intentionally blocked in-app.
-    /// Users may still disable all plans manually in Settings.
-    func canManageCellularPlans() -> Bool {
-        if UIDevice.current.userInterfaceIdiom == .pad { // 1. iPad蜂窝版无法使用
-            return false
-            
-        }
-        if IMEIs.count < 2 { // 2. 没权限和单卡手机无法使用
-            return false
-        }
-        if plans.count < 2 { // 3. 双卡手机但是就一张卡的用户无法使用
-            return false
-        }
-        return true
-    }
-    
-    // 判断是否可以关闭蜂窝数据套餐
-    func canTurnOffCellularPlan() -> Bool {
-        // 没有启用任何一张卡或者当前就启用了一张卡 那不能把最后一张卡关闭，否则app将无限闪退，直到用户从设置中随意打开一张卡为止
-        if getCellularPlans().count == 1 || getCellularPlans().filter({ $0.isSelected }).count <= 1 {
-            return false
-        }
-        return true
-    }
-    
     // 获取所有SIM卡卡槽信息
     func getAllSIMSlots() -> [SIMSlot] {
         var slots: [SIMSlot] = []
         
-        if IMEIs.isEmpty { // 拒绝Wi-Fi版iPad或者证书签名情况
-            return slots
-        }
+        let slotCount = getDeviceSlotCount() // 获取卡槽数量
         
-        let slotCount = max(1, IMEIs.count) // 获取卡槽数量
+        if slotCount == 0 { // 拒绝Wi-Fi版iPad或者证书签名情况
+            return []
+        }
 
         for slot in 1...slotCount {
             //获取当前卡槽信息
@@ -300,7 +246,7 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
                     // 获取当前卡设置的网络类型
                     let currentRate = try getSlotSelectRate(context: context)
                     // 获取当前卡槽的IMEI
-                    let IMEIValue = IMEIs.indices.contains(slot - 1) ? IMEIs[slot - 1].value : ""
+                    let IMEIValue = slot == 1 ? getDeviceIMEI1() : getDeviceIMEI2()
                     
                     slots.append(SIMSlot(slot: slot, uuid: uuid, ICCID: iccid, label: label, operatorName: operatorName, phoneNumber: phoneNumber, registrationStatus: registrationStatus, isEnabled: isEnabled, isDataPreferred: isDataPreferred, supportedRates: supportedDataRates, currentRate: currentRate, supports5G: supported5G, IMEI: IMEIValue))
                     
@@ -316,15 +262,33 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         return slots
     }
     
-    func getSlotCardICCID(slotID: Int) -> String {
+    func setDataSlot(slotID: Int) -> Bool {
+        if slotID <= 0 || slotID >= getDeviceSlotCount() + 1 { // 切换不能超过IMEI的最大容量，否则肯定失败
+            return false
+        }
+        // 获取需要切换卡槽的context
+        if let context = getServiceSubscriptionContext(slot: slotID) {
+            do {
+                // 切换数据卡
+                try setActiveUserDataSelection(context: context)
+                return true
+            } catch {
+                return false
+            }
+        }
+        return false
+    }
+    
+    // 获取卡槽中卡的ICCID
+    func getSlotCardICCID(slotID: Int) -> String? {
         do {
             if let context = getServiceSubscriptionContext(slot: slotID) {
-                return try getSlotICCID(context: context) ?? ""
+                return try getSlotICCID(context: context)
             }
         } catch {
-            return ""
+            return nil
         }
-        return ""
+        return nil
     }
     
     // 获取全部已经启用的卡槽信息
@@ -337,60 +301,7 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         return SIMSlotList
     }
     
-    // 判断是否有已经启用的卡槽
-    private func hasAnyEnabledSIMSlot() -> Bool {
-        return getAllSIMSlots().contains(where: { $0.isEnabled })
-    }
-    
-    // 切换卡槽流量
-    func setDataSlot(SIMSlot: SIMSlot) -> Bool {
-        return setDataSlot(slot: SIMSlot.slot)
-    }
-    
-    // 切换卡槽流量
-    func setDataSlot(slot: Int) -> Bool {
-        if slot >= IMEIs.count + 1 { // 切换不能超过IMEI的最大容量，否则肯定失败
-            return false
-        }
-        let controlSlot: Int
-        // 获取是否开启兼容性模式
-        if SettingsUtils.instance.getEnableCompatibilitySwitchMode() {
-            controlSlot = slot == 1 ? 2 : 1
-        } else {
-            controlSlot = slot
-        }
-        // 获取需要切换卡槽的context
-        if let context = getServiceSubscriptionContext(slot: controlSlot) {
-            // 切换数据卡
-            var error: NSError? // 创建一个接收错误信息的对象
-            coreTelephonyClient.setActiveUserDataSelection(context, error: &error)
-            if let error = error { // 判断是否有异常
-                // 处理异常
-                NSLog("[TrollSIMSwitcher] error:\(error.code) \(error.description)")
-                return false
-            }
-            
-            return true
-        }
-        return false
-    }
-    
-    // 将流量卡切换到另一个卡槽
-    func toggleDataSlot() -> Bool {
-        // 如果只有一个启用的卡，那不需要切换
-        if getAllSIMSlots().filter({ $0.isEnabled }).count < 2 {
-            return false
-        }
-        do {
-            // 获取当前的卡槽，设定到另一个卡槽
-            let controlSlot = try getDataPreferredSlotID() == 1 ? 2 : 1
-            return setDataSlot(slot: controlSlot)
-        } catch {
-            return false
-        }
-    }
-    
-    // 切换网络类型
+    // 设置蜂窝数据卡的网络类型
     func setDataRate(SIMSlot: SIMSlot, selectRate: Int64) -> Bool {
         return setDataRate(slot: SIMSlot.slot, selectRate: selectRate)
     }
@@ -427,27 +338,6 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         return setDataPreferredRate(selectRate: selectRate.rawValue)
     }
     
-    // 切换当前选择的卡的数据类型 例如4G 5G之间切换
-    func toggleDataPreferredRate() -> Bool {
-        do {
-            var supportRates = try getDataPreferredSlotSupportRates()
-            
-            if supportRates.count < 1 { // 没有获取到网络支持列表，直接返回失败
-                return false
-            }
-            
-            if supportRates.count == 1 { // 只支持一种网络类型，直接不需要切换，返回成功
-                return true
-            }
-            
-            // 排序一下最高的支持网络类型
-            supportRates = supportRates.sorted()
-            // 设置网络类型，如果是最高支持就切换到第二支持，如果第二支持就切换到最高支持
-            return setDataPreferredRate(selectRate: try getDataPreferredSlotRate() == supportRates.last! ? supportRates[supportRates.count - 2] : supportRates.last!)
-        } catch {
-            return false
-        }
-    }
     
     // 回调 通知当前状态更改
     private func notifyUpdate() {

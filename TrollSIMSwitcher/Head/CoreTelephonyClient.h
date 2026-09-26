@@ -12,6 +12,7 @@
 #import "CTXPCServiceSubscriptionContext.h"
 #import "CTSupportedMaxDataRates.h"
 #import "CTPhoneNumberInfo.h"
+#import "CTMobileEquipmentInfoList.h"
 
 @class CoreTelephonyClientMux;
 
@@ -331,7 +332,7 @@
 -(void)getLowLatencyFilters:(int)arg1 queueSetId:(unsigned long long)arg2 completion:(/*^block*/id)arg3 ;
 -(void)getMaxDataRate:(id)arg1 completion:(/*^block*/id)arg2;
 -(long long)getMaxDataRate:(CTXPCServiceSubscriptionContext *)context error:(NSError **)error; // 获取当前的网络类型
--(id)getMobileEquipmentInfo:(id*)arg1 ;
+-(CTMobileEquipmentInfoList *)getMobileEquipmentInfo:(NSError **)error; // 获取设备基本信息 IMEI EID MEID这些
 -(id)getMobileEquipmentInfoFor:(id)arg1 error:(id*)arg2 ;
 -(void)getMobileSubscriberHomeCountryList:(id)arg1 completion:(/*^block*/id)arg2 ;
 -(id)getMobileSubscriberHomeCountryList:(id)arg1 error:(id*)arg2 ;

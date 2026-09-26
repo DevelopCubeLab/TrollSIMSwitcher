@@ -19,18 +19,13 @@
 	<key>com.apple.CommCenter.fine-grained</key>
 	<array>
 		<string>spi</string>
-    	<string>preferences-write</string>
+		<string>preferences-write</string>
 		<string>cellular-plan</string>
 	</array>
 	<key>com.apple.wifi.manager-access</key>
 	<true/>
-	<key>com.apple.private.MobileGestalt.AllowedProtectedKeys</key>
-	<array>
-		<string>InternationalMobileEquipmentIdentity</string>
-    	<string>InternationalMobileEquipmentIdentity2</string>
-	</array>
 	<key>com.apple.developer.usernotifications.time-sensitive</key>
-  	<true/>
+	<true/>
 	<key>com.apple.developer.usernotifications.critical-alerts</key>
 	<true/>
 </dict>

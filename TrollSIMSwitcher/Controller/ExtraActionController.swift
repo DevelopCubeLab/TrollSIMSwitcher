@@ -8,21 +8,20 @@ class ExtraActionController {
     
     func performExtraActions(toggle: Bool) -> Bool {
         
-        do {
-            let slotID = try CoreTelephonyController.instance.getDataPreferredSlotID()
+        if let slotID = CellularController.instance.getDataPreferredSlotID() {
             if toggle {
                return performExtraActions(slotID: slotID == 2 ? 1 : 2)
             } else {
                 return performExtraActions(slotID: Int(slotID))
             }
-        } catch {
+        } else {
             return false
         }
     }
     
     // 使用Slot ID来执行操作
     func performExtraActions(slotID: Int) -> Bool {
-        return performExtraActions(iccid: CoreTelephonyController.instance.getSlotCardICCID(slotID: slotID))
+        return performExtraActions(iccid: CellularController.instance.getSlotCardICCID(slotID: slotID))
     }
     
     // 使用ICCID来执行操作

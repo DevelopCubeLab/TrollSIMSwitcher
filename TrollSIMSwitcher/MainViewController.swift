@@ -35,10 +35,6 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         navigationItem.title = NSLocalizedString("CFBundleDisplayName", comment: "")
         
         loadSIMSlots()
-        // 判断用户是否符合可以管理蜂窝数据卡的权利
-        if !CoreTelephonyController.instance.canManageCellularPlans() { // 不符合条件的不显示cell
-            tableCellList[2] = []
-        }
         
         // 判断用户是否开启通知权限
         updateNotificationsCell()
@@ -97,7 +93,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     private func loadSIMSlots() {
         SIMSlotList = []
         // 获取全部已经启用的卡槽信息
-        SIMSlotList = CoreTelephonyController.instance.getAllEnabledSlots()
+        SIMSlotList = CellularController.instance.getAllEnabledSlots()
         // 设置快捷方式
         SettingsUtils.instance.setHomeScreenQuickActions(application: UIApplication.shared)
     }
@@ -128,11 +124,11 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         } else if section == 1 {
             return NSLocalizedString("NetworkType", comment: "")
         } else if section == 2 {
-            if CoreTelephonyController.instance.canManageCellularPlans() { // 只有符合管理蜂窝数据卡条件的环境才显示标题
-                return NSLocalizedString("CellularPlan", comment: "")
-            } else {
-                return nil
-            }
+//            if CoreTelephonyController.instance.canManageCellularPlans() { // 只有符合管理蜂窝数据卡条件的环境才显示标题
+//                return NSLocalizedString("CellularPlan", comment: "")
+//            } else {
+//                return nil
+//            }
         } else if section == 3 {
             return NSLocalizedString("Maintenance", comment: "")
         } else if section == 4 {
@@ -212,7 +208,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                     cell.textLabel?.textColor = .lightGray //文本变成灰色
                 } else {
                     // 设置开关卡槽
-                    if let cellularPlan = CoreTelephonyController.instance.getCellularPlan(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
+                    if let cellularPlan = CellularController.instance.getCellularPlan(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
                         let cellularPlanText: String
                         if SettingsUtils.instance.getShowSlotLabel() { // 是否显示卡标签
                             cellularPlanText = cellularPlan.label
@@ -222,12 +218,6 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                         if cellularPlan.isSelected {
                             cell.textLabel?.text = String.localizedStringWithFormat(NSLocalizedString("TurnOffCellularPlan", comment: ""), cellularPlanText)
                             cell.textLabel?.textColor = .systemRed //文本变成红色
-                            if !CoreTelephonyController.instance.canTurnOffCellularPlan() { // 如果不能关闭的情况不允许用户关闭最后一张蜂窝数据卡
-                                // 禁用选择
-                                cell.selectionStyle = .none
-                                cell.isUserInteractionEnabled = false
-                                cell.textLabel?.textColor = .lightGray //文本变成灰色
-                            }
                         } else {
                             cell.textLabel?.text = String.localizedStringWithFormat(NSLocalizedString("TurnOnCellularPlan", comment: ""), cellularPlanText)
                             cell.textLabel?.textColor = .systemBlue //文本变成蓝色
@@ -334,10 +324,6 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             } else if indexPath.row == 3 { // 切换蜂窝数据卡
                 switchView.tag = SettingsSwitchViewTag.EnableToggleCellularPlanNotifications.rawValue // 设置识别id
                 switchView.isOn = SettingsUtils.instance.getEnableToggleCellularPlanNotifications() // 从配置文件中获取状态
-                if !CoreTelephonyController.instance.canManageCellularPlans() {
-                    cell.textLabel?.textColor = .lightGray //文本变成灰色
-                    switchView.isEnabled = false // 禁用开关
-                }
             } else if indexPath.row == 4 { // 使用重要通知
                 switchView.tag = SettingsSwitchViewTag.UseCriticalNotifications.rawValue // 设置识别id
                 switchView.isOn = SettingsUtils.instance.getUseCriticalNotifications() // 从配置文件中获取状态
@@ -380,7 +366,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         tableView.deselectRow(at: indexPath, animated: true)
         
         if indexPath.section == 0 { // 切换数据流量卡
-            if CoreTelephonyController.instance.setDataSlot(SIMSlot: SIMSlotList[indexPath.row]) {
+            if CellularController.instance.setDataSlot(SIMSlot: SIMSlotList[indexPath.row]) {
                 // 执行点击后的操作
                 _ = ExtraActionController.instance.performExtraActions(iccid: SIMSlotList[indexPath.row].ICCID)
                 // 补发通知
@@ -390,7 +376,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             
             if let preferred = SIMSlotList.first(where: { $0.isDataPreferred }) { // 获取首选数据卡
                 let selectRate = preferred.supportedRates?.rates[indexPath.row]
-                if CoreTelephonyController.instance.setDataRate(SIMSlot: SIMSlotList.first(where: { $0.isDataPreferred })!, selectRate: selectRate as! Int64) {
+                if CellularController.instance.setDataRate(SIMSlot: SIMSlotList.first(where: { $0.isDataPreferred })!, selectRate: selectRate as! Int64) {
                     // 取消之前的选择 因为等待数据刷新大概需要1秒，会导致操作不连贯，不符合直觉，所以先在UI操作下，等待系统自动刷新数据
                     if let indices = preferred.supportedRates?.rates.indices {
                         for i in indices {
@@ -407,7 +393,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         } else if indexPath.section == 2 { // 管理蜂窝数据卡
             if indexPath.row == 0 { // 关闭或者打开某个卡
                 if SettingsUtils.instance.getShowAlertWhenTurningOffCellularPlan() {
-                    if let cellularPlan = CoreTelephonyController.instance.getCellularPlan(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
+                    if let cellularPlan = CellularController.instance.getCellularPlan(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
                         if cellularPlan.isSelected { // 禁用某张卡
                             
                             // 获取卡名称
@@ -427,7 +413,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
 
                             // "确定" 按钮（红色，左边）
                             let deleteAction = UIAlertAction(title: NSLocalizedString("TurnOff", comment: ""), style: .destructive) { _ in
-                                if CoreTelephonyController.instance.setCellularPlanEnable(planID: cellularPlan.identifier, enable: false) {
+                                if CellularController.instance.setCellularPlanEnable(planID: cellularPlan.identifier, enable: false) {
                                     // 刷新当前的cell
                                     tableView.reloadSections(IndexSet(integer: 2), with: .none)
                                     // 补发普通通知
@@ -446,7 +432,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                             present(alert, animated: true, completion: nil)
                             
                         } else { // 开启蜂窝数据卡不需要弹窗提醒
-                            if CoreTelephonyController.instance.setCellularPlanEnable(planID: cellularPlan.identifier, enable: true) {
+                            if CellularController.instance.setCellularPlanEnable(planID: cellularPlan.identifier, enable: true) {
                                 // 刷新当前的cell
                                 tableView.reloadSections(IndexSet(integer: 2), with: .none)
                                 // 补发普通通知
@@ -460,7 +446,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                         tableView.reloadRows(at: [indexPath], with: .none)
                     }
                 } else { // 不弹出警告的时候直接切换
-                    if CoreTelephonyController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
+                    if CellularController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
                         // 刷新当前的cell
                         tableView.reloadSections(IndexSet(integer: 2), with: .none)
                         // 补发普通通知
@@ -849,8 +835,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         // "确定" 按钮
         let confirmAction = UIAlertAction(title: NSLocalizedString("Confirm", comment: ""), style: .default) { _ in
-            if AppCapability.hasCommCenterSPI() { // 该API不会抛异常 无权限只是被CommCenter丢弃请求 需要手动判断
-                CoreTelephonyController.instance.refreshCellularConnection()
+            if CellularController.instance.refreshCellularConnection() {
                 UIUtils.showAlert(message: NSLocalizedString("WaitingForRefresh", comment: ""), in: self)
             } else { // 无权限
                 UIUtils.showAlert(message: NSLocalizedString("NoPermission", comment: ""), in: self)
