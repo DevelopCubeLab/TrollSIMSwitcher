@@ -6,22 +6,9 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     private var tableView = UITableView()
     
-    private var tableCellList = [[], [],
-                                 ["", NSLocalizedString("SelectCellularPlan", comment: "")],
-                                 [NSLocalizedString("RefreshCellularConnection", comment: ""),
-                                  NSLocalizedString("RebootCommCenter", comment: "")],
-                                 [NSLocalizedString("CompatibilitySwitchMode", comment: ""),
-                                  NSLocalizedString("ShowSlotLabel", comment: ""),
-                                  NSLocalizedString("ShowOperatorName", comment: ""),
-                                  NSLocalizedString("ShowPhoneNumber", comment: ""),
-                                  NSLocalizedString("ShowAlertWhenTurningOffCellularPlan", comment: "")],
-                                 [NSLocalizedString("HomeScreenQuickActions", comment: ""),
-                                  NSLocalizedString("ExitAfterQuickSwitching", comment: "")],
-                                 [],
-                                 [NSLocalizedString("Version", comment: ""), "GitHub", "Havoc"]]
+    private var tableCellList: [InfoItemGroup] = []
 
     private static let notificationsAtSection = 6
-    private static let aboutAtSection = 7
     
     private var SIMSlotList: [SIMSlot] = []
     
@@ -35,9 +22,6 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         navigationItem.title = NSLocalizedString("CFBundleDisplayName", comment: "")
         
         loadSIMSlots()
-        
-        // 判断用户是否开启通知权限
-        updateNotificationsCell()
 
         // iOS 15 之后的版本使用新的UITableView样式
         if #available(iOS 15.0, *) {
@@ -94,6 +78,77 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         SIMSlotList = []
         // 获取全部已经启用的卡槽信息
         SIMSlotList = CellularController.instance.getAllEnabledSlots()
+        // 清空列表信息
+        tableCellList = []
+        // 蜂窝网络分组
+        let cellularDataInfoGroup = InfoItemGroup(id: HomeItemGroupID.cellularDataGroup, titleText: NSLocalizedString("CellularData", comment: ""))
+        // 网络类型分组
+        let networkTypeInfoGroup = InfoItemGroup(id: HomeItemGroupID.networkTypeGroup, titleText: NSLocalizedString("NetworkType", comment: ""))
+        for slot in SIMSlotList {
+            // 将当前的蜂窝数据选项加入信息组
+            cellularDataInfoGroup.addItem(InfoItem(id: slot.slot, text: "", selected: slot.isDataPreferred))
+            if slot.isDataPreferred { // 判断是否是首选蜂窝数据卡
+                // 获取首选蜂窝数据卡的网络类型
+                if let rates = slot.supportedRates?.rates {
+                    for case let rate as Int in rates {
+                        // 把网络类型的选项加入信息组
+                        networkTypeInfoGroup.addItem(InfoItem(id: rate, text: CellularUtils.getRateText(rate: rate), selected: rate == slot.currentRate))
+                    }
+                }
+            }
+        }
+        tableCellList.append(cellularDataInfoGroup)
+        tableCellList.append(networkTypeInfoGroup)
+        // 蜂窝数据卡分组
+        let cellularPlanInfoGroup = InfoItemGroup(id: HomeItemGroupID.cellularPlanGroup, titleText: NSLocalizedString("CellularPlan", comment: ""))
+        cellularPlanInfoGroup.addItem(InfoItem(id: HomeItemID.cellularPlan, text: NSLocalizedString("SelectCellularPlan", comment: "")))
+        cellularPlanInfoGroup.addItem(InfoItem(id: HomeItemID.selectCellularPlan, text: NSLocalizedString("SelectCellularPlan", comment: "")))
+        tableCellList.append(cellularPlanInfoGroup)
+        // 维护分组
+        let maintenanceInfoGroup = InfoItemGroup(id: HomeItemGroupID.maintenanceGroup, titleText: NSLocalizedString("Maintenance", comment: ""), items: [
+            InfoItem(id: HomeItemID.refreshCellularConnection, text: NSLocalizedString("RefreshCellularConnection", comment: "")),
+            InfoItem(id: HomeItemID.rebootCommCenter, text: NSLocalizedString("RebootCommCenter", comment: ""))
+        ])
+        tableCellList.append(maintenanceInfoGroup)
+        
+        // 选项分组
+        let optionsInfoGroup = InfoItemGroup(id: HomeItemGroupID.optionsGroup, titleText: NSLocalizedString("Options", comment: ""), items: [
+            InfoItem(id: SettingsSwitchViewTag.EnableCompatibilitySwitchMode, text: NSLocalizedString("CompatibilitySwitchMode", comment: "")),
+            InfoItem(id: SettingsSwitchViewTag.ShowSlotLabel, text: NSLocalizedString("ShowSlotLabel", comment: "")),
+            InfoItem(id: SettingsSwitchViewTag.ShowOperatorName, text: NSLocalizedString("ShowOperatorName", comment: "")),
+            InfoItem(id: SettingsSwitchViewTag.ShowPhoneNumber, text: NSLocalizedString("ShowPhoneNumber", comment: "")),
+            InfoItem(id: SettingsSwitchViewTag.ShowAlertWhenTurningOffCellularPlan, text: NSLocalizedString("ShowAlertWhenTurningOffCellularPlan", comment: ""))
+        ], footerText: String.localizedStringWithFormat(NSLocalizedString("EnableCompatibilityModeMessage", comment: ""), NSLocalizedString("CompatibilitySwitchMode", comment: "")))
+        tableCellList.append(optionsInfoGroup)
+        
+        // 快捷切换分组
+        let shortcutsInfoGroup = InfoItemGroup(id: HomeItemGroupID.shortcutsGroup, titleText: NSLocalizedString("Shortcuts", comment: ""), items: [
+            InfoItem(id: SettingsSwitchViewTag.EnableHomeScreenQuickActions, text: NSLocalizedString("HomeScreenQuickActions", comment: "")),
+            InfoItem(id: SettingsSwitchViewTag.ExitAfterQuickSwitching, text: NSLocalizedString("ExitAfterQuickSwitching", comment: ""))
+        ], footerText: nil)
+        tableCellList.append(shortcutsInfoGroup)
+        
+        // 通知分组
+        let notificationsInfoGroup = InfoItemGroup(id: HomeItemGroupID.notificationsGroup, titleText: NSLocalizedString("Notifications", comment: ""), items: [
+            InfoItem(id: SettingsSwitchViewTag.EnableNotifications, text: NSLocalizedString("Enable", comment: ""))
+        ], footerText: NSLocalizedString("NotificationsFooterMessage", comment: ""))
+        
+        if SettingsUtils.instance.getEnableNotifications() { // 如果开启了通知就直接添加上通知选项
+            notificationsInfoGroup.addItems(self.getNotificationItems())
+        }
+        
+        tableCellList.append(notificationsInfoGroup)
+        
+        let aboutInfoGroup = InfoItemGroup(id: HomeItemGroupID.aboutGroup, titleText: NSLocalizedString("About", comment: ""), items: [
+            InfoItem(id: HomeItemID.versionCode, text: NSLocalizedString("Version", comment: "")),
+            InfoItem(id: HomeItemID.githubLink, text: "GitHub"),
+            InfoItem(id: HomeItemID.havocLink, text: "Havoc")
+        ])
+        
+        tableCellList.append(aboutInfoGroup)
+        // 刷新通知分组
+        updateNotificationsCell()
+        
         // 设置快捷方式
         SettingsUtils.instance.setHomeScreenQuickActions(application: UIApplication.shared)
     }
@@ -105,59 +160,32 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     // MARK: - 设置每个分组的Cell数量
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 0 {
-            return SIMSlotList.count
-        } else if section == 1 {
-            if let preferred = SIMSlotList.first(where: { $0.isDataPreferred }) { // 获取首选数据卡
-                return preferred.supportedRates?.rates.count ?? 0
-            } else {
-                return 0
-            }
-        }
-        return tableCellList[section].count
+        return tableCellList[section].items.count
     }
     
     // MARK: - 设置每个分组的顶部标题
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        if section == 0 {
-            return NSLocalizedString("CellularData", comment: "")
-        } else if section == 1 {
-            return NSLocalizedString("NetworkType", comment: "")
-        } else if section == 2 {
-//            if CoreTelephonyController.instance.canManageCellularPlans() { // 只有符合管理蜂窝数据卡条件的环境才显示标题
-//                return NSLocalizedString("CellularPlan", comment: "")
-//            } else {
-//                return nil
-//            }
-        } else if section == 3 {
-            return NSLocalizedString("Maintenance", comment: "")
-        } else if section == 4 {
-            return NSLocalizedString("Options", comment: "")
-        } else if section == 5 {
-            return NSLocalizedString("Shortcuts", comment: "")
-        } else if section == MainViewController.notificationsAtSection {
-            return NSLocalizedString("Notifications", comment: "")
-        } else if section == MainViewController.aboutAtSection {
-            return NSLocalizedString("About", comment: "")
-        }
-        return nil
+        return tableCellList[section].titleText
     }
     
     // MARK: - 设置每个分组的底部标题 可以为分组设置尾部文本，如果没有尾部可以返回 nil
     func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        if section == 4 {
-            return String.localizedStringWithFormat(NSLocalizedString("EnableCompatibilityModeMessage", comment: ""), NSLocalizedString("CompatibilitySwitchMode", comment: ""))
-        } else if section == MainViewController.notificationsAtSection {
-            return NSLocalizedString("NotificationsFooterMessage", comment: "")
-        }
-        return nil
+        return tableCellList[section].footerText
     }
     
     // MARK: - 构造每个Cell
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell = UITableViewCell(style: .default, reuseIdentifier: "Cell")
+        // 设置文本
+        cell.textLabel?.text = tableCellList[indexPath.section].items[indexPath.row].text
+        cell.textLabel?.numberOfLines = 0 // 允许换行
         
-        if indexPath.section == 0 { // 卡槽选择
+        // 获取分组ID
+        let groupID = tableCellList[indexPath.section].id
+        // 获取item
+        let item = tableCellList[indexPath.section].items[indexPath.row]
+        
+        if groupID == HomeItemGroupID.cellularDataGroup { // 卡槽选择
             cell = UITableViewCell(style: .subtitle, reuseIdentifier: "Cell")
             let slot = SIMSlotList[indexPath.row] // 获取当前卡槽数据
             if SettingsUtils.instance.getShowSlotLabel() { // 设置卡槽名称
@@ -180,26 +208,19 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 cell.detailTextLabel?.textColor = .secondaryLabel
                 cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 15)
             }
-            if SIMSlotList[indexPath.row].isDataPreferred { // 给首选数据卡画上对勾
+            if item.selected { // 给首选数据卡画上对勾
                 cell.accessoryType = .checkmark
             } else {
                 cell.accessoryType = .none
             }
-        } else if indexPath.section == 1 { // 网络类型选择
-            
-            if let preferred = SIMSlotList.first(where: { $0.isDataPreferred }) { // 获取首选数据卡
-                cell.textLabel?.text = CellularUtils.getRateText(rate: preferred.supportedRates?.rates[indexPath.row] as! Int) // 文本化显示网络类型
-                
-                if preferred.currentRate == preferred.supportedRates?.rates[indexPath.row] as! Int64 { // 给首选网络类型画上对勾
-                    cell.accessoryType = .checkmark
-                } else {
-                    cell.accessoryType = .none
-                }
+        } else if groupID == HomeItemGroupID.networkTypeGroup { // 网络类型选择
+            if item.selected { // 给首选网络类型画上对勾
+                cell.accessoryType = .checkmark
+            } else {
+                cell.accessoryType = .none
             }
-        } else if indexPath.section == 2 { // 开关某一张卡
-            cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
-            cell.textLabel?.numberOfLines = 0 // 允许换行
-            if indexPath.row == 0 { // 开关
+        } else if groupID == HomeItemGroupID.cellularPlanGroup { // 开关某一张卡
+            if item.id == HomeItemID.cellularPlan { // 开关
                 if SettingsUtils.instance.getSelectCellularPlan1().isEmpty { // 当前没有去选择数据套餐
                     cell.textLabel?.text = NSLocalizedString("NoCellularPlanSelected", comment: "")
                     // 禁用选择
@@ -235,84 +256,49 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             } else {
                 cell.accessoryType = .disclosureIndicator
             }
-        } else if indexPath.section == 3 { // 维护
-            cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
-            cell.textLabel?.numberOfLines = 0 // 允许换行
+        } else if groupID == HomeItemGroupID.maintenanceGroup { // 维护
             cell.textLabel?.textColor = .systemBlue // 文本设置成蓝色
-        } else if indexPath.section == 4 { // 选项
-            cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
-            cell.textLabel?.numberOfLines = 0 // 允许换行
+        } else if groupID == HomeItemGroupID.optionsGroup || groupID == HomeItemGroupID.shortcutsGroup || groupID == HomeItemGroupID.notificationsGroup { // 选项 快捷方式 通知分组
+            
+            if item.id == HomeItemID.sendNotification || item.id == HomeItemID.goToNotificationSettings { // 两个特例 发送通知 和 跳转到通知设置
+                cell.textLabel?.textColor = .systemBlue // 文本设置成蓝色
+                return cell
+            }
+            
             let switchView = UISwitch(frame: .zero)
-            if indexPath.row == 0 { // 获取设置兼容模式
-                switchView.tag = SettingsSwitchViewTag.EnableCompatibilitySwitchMode.rawValue // 设置识别id
+            switchView.tag = item.id // 设置识别id
+            switch item.id {
+            case SettingsSwitchViewTag.EnableCompatibilitySwitchMode:
                 switchView.isOn = SettingsUtils.instance.getEnableCompatibilitySwitchMode() // 从配置文件中获取状态
                 if SIMSlotList.count < 1 { // 只有单卡的情况
                     cell.textLabel?.textColor = .lightGray //文本变成灰色
                     switchView.isEnabled = false // 禁用开关
                 }
-            } else if indexPath.row == 1 { // 显示卡槽标签
-                switchView.tag = SettingsSwitchViewTag.ShowSlotLabel.rawValue // 设置识别id
+            case SettingsSwitchViewTag.ShowSlotLabel:
                 if UIDevice.current.userInterfaceIdiom == .pad { // 这里其实可以被插件绕过，不过其实也无所谓
                     cell.textLabel?.textColor = .lightGray //文本变成灰色
                     switchView.isEnabled = false // 禁用开关
                 }
                 switchView.isOn = SettingsUtils.instance.getShowSlotLabel() // 从配置文件中获取状态
-            } else if indexPath.row == 2 { // 显示运营商名称
-                switchView.tag = SettingsSwitchViewTag.ShowOperatorName.rawValue // 设置识别id
+            case SettingsSwitchViewTag.ShowOperatorName:
                 switchView.isOn = SettingsUtils.instance.getShowOperatorName() // 从配置文件中获取状态
-            } else if indexPath.row == 3 { // 显示电话号码
-                switchView.tag = SettingsSwitchViewTag.ShowPhoneNumber.rawValue // 设置识别id
+            case SettingsSwitchViewTag.ShowPhoneNumber:
                 switchView.isOn = SettingsUtils.instance.getShowPhoneNumber() // 从配置文件中获取状态
-            } else if indexPath.row == 4 { // 在关闭蜂窝号码之前显示警告
-                switchView.tag = SettingsSwitchViewTag.ShowAlertWhenTurningOffCellularPlan.rawValue // 设置识别id
+            case SettingsSwitchViewTag.ShowAlertWhenTurningOffCellularPlan:
                 switchView.isOn = SettingsUtils.instance.getShowAlertWhenTurningOffCellularPlan() // 从配置文件中获取状态
-            }
-            // 开光状态改变的回调
-            switchView.addAction(UIAction { [weak self] action in
-                self?.onSwitchChanged(action.sender as! UISwitch)
-            }, for: .valueChanged)
-            cell.accessoryView = switchView
-            cell.selectionStyle = .none
-            
-        } else if indexPath.section == 5 { // 快捷方式
-            cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
-            cell.textLabel?.numberOfLines = 0 // 允许换行
-            let switchView = UISwitch(frame: .zero)
-            if indexPath.row == 0 { // 桌面快捷方式
-                switchView.tag = SettingsSwitchViewTag.EnableHomeScreenQuickActions.rawValue // 设置识别id
+            case SettingsSwitchViewTag.EnableHomeScreenQuickActions:
                 switchView.isOn = SettingsUtils.instance.getEnableHomeScreenQuickActions() // 从配置文件中获取状态
-            } else if indexPath.row == 1 { // 快速切换后自动退出应用程序
-                switchView.tag = SettingsSwitchViewTag.ExitAfterQuickSwitching.rawValue // 设置识别id
+            case SettingsSwitchViewTag.ExitAfterQuickSwitching:
                 switchView.isOn = SettingsUtils.instance.getExitAfterQuickSwitching() // 从配置文件中获取状态
-            }
-            // 开光状态改变的回调
-            switchView.addAction(UIAction { [weak self] action in
-                self?.onSwitchChanged(action.sender as! UISwitch)
-            }, for: .valueChanged)
-            cell.accessoryView = switchView
-            cell.selectionStyle = .none
-        } else if indexPath.section == MainViewController.notificationsAtSection { // 通知设置
-            cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
-            cell.textLabel?.numberOfLines = 0 // 允许换行
-            let switchView = UISwitch(frame: .zero)
-            if indexPath.row == 0 {
-                switchView.tag = SettingsSwitchViewTag.EnableNotifications.rawValue // 设置识别id
+            case SettingsSwitchViewTag.EnableNotifications:
                 switchView.isOn = SettingsUtils.instance.getEnableNotifications() // 从配置文件中获取状态
-            } else if indexPath.row == 1 {
-                if tableCellList[MainViewController.notificationsAtSection].count == 2 { // 如果只有两条的情况，那就说明禁用了通知
-                    cell.textLabel?.textColor = .systemBlue // 文本设置成蓝色
-                    return cell
-                }
-                // 开启切换蜂窝数据流量卡通知
-                switchView.tag = SettingsSwitchViewTag.EnableToggleCellularDataSlotNotifications.rawValue // 设置识别id
+            case SettingsSwitchViewTag.EnableToggleCellularDataSlotNotifications:
                 switchView.isOn = SettingsUtils.instance.getEnableToggleCellularDataSlotNotifications() // 从配置文件中获取状态
                 if SIMSlotList.count < 1 { // 只有单卡的情况
                     cell.textLabel?.textColor = .lightGray //文本变成灰色
                     switchView.isEnabled = false // 禁用开关
                 }
-            } else if indexPath.row == 2 {
-                // 切换网络类型通知
-                switchView.tag = SettingsSwitchViewTag.EnableToggleNetworkTypeNotifications.rawValue // 设置识别id
+            case SettingsSwitchViewTag.EnableToggleNetworkTypeNotifications:
                 switchView.isOn = SettingsUtils.instance.getEnableToggleNetworkTypeNotifications() // 从配置文件中获取状态
                 let preferred = SIMSlotList.first(where: { $0.isDataPreferred })
                 if preferred != nil || SIMSlotList.isEmpty { // 获取首选数据卡
@@ -321,15 +307,12 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                         switchView.isEnabled = false // 禁用开关
                     }
                 }
-            } else if indexPath.row == 3 { // 切换蜂窝数据卡
-                switchView.tag = SettingsSwitchViewTag.EnableToggleCellularPlanNotifications.rawValue // 设置识别id
+            case SettingsSwitchViewTag.EnableToggleCellularPlanNotifications:
                 switchView.isOn = SettingsUtils.instance.getEnableToggleCellularPlanNotifications() // 从配置文件中获取状态
-            } else if indexPath.row == 4 { // 使用重要通知
-                switchView.tag = SettingsSwitchViewTag.UseCriticalNotifications.rawValue // 设置识别id
+            case SettingsSwitchViewTag.UseCriticalNotifications:
                 switchView.isOn = SettingsUtils.instance.getUseCriticalNotifications() // 从配置文件中获取状态
-            } else if indexPath.row == 5 || indexPath.row == 6 {
-                cell.textLabel?.textColor = .systemBlue // 文本设置成蓝色
-                return cell
+            default:
+                break
             }
             // 开光状态改变的回调
             switchView.addAction(UIAction { [weak self] action in
@@ -337,10 +320,11 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             }, for: .valueChanged)
             cell.accessoryView = switchView
             cell.selectionStyle = .none
-        } else if indexPath.section == MainViewController.aboutAtSection { // 关于
-            if indexPath.row == 0 {
+            
+        } else if groupID == HomeItemGroupID.aboutGroup { // 关于
+            if item.id == HomeItemID.versionCode {
                 cell = UITableViewCell(style: .value1, reuseIdentifier: "cell")
-                cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
+                cell.textLabel?.text = tableCellList[indexPath.section].items[indexPath.row].text
                 let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? NSLocalizedString("Unknown", comment: "未知")
                 if version != MainViewController.versionCode { // 判断版本号是不是有人篡改
                     cell.detailTextLabel?.text = MainViewController.versionCode
@@ -350,8 +334,6 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 cell.selectionStyle = .none
                 cell.accessoryType = .none
             } else {
-                cell.textLabel?.text = tableCellList[indexPath.section][indexPath.row]
-                cell.textLabel?.numberOfLines = 0 // 允许换行
                 cell.accessoryType = .disclosureIndicator
                 cell.selectionStyle = .default // 启用选中效果
             }
@@ -365,14 +347,19 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         tableView.deselectRow(at: indexPath, animated: true)
         
-        if indexPath.section == 0 { // 切换数据流量卡
+        // 获取分组ID
+        let groupID = tableCellList[indexPath.section].id
+        // 获取item
+        let item = tableCellList[indexPath.section].items[indexPath.row]
+        
+        if groupID == HomeItemGroupID.cellularDataGroup { // 切换数据流量卡
             if CellularController.instance.setDataSlot(SIMSlot: SIMSlotList[indexPath.row]) {
                 // 执行点击后的操作
                 _ = ExtraActionController.instance.performExtraActions(iccid: SIMSlotList[indexPath.row].ICCID)
                 // 补发通知
                 NotificationController.instance.sendNotifications(silentNotifications: true, groupIdentifier: NotificationController.switchSlotGroupIdentifier, switchedSlotID: SIMSlotList[indexPath.row].slot)
             }
-        } else if indexPath.section == 1 { // 切换网络类型
+        } else if groupID == HomeItemGroupID.networkTypeGroup { // 切换网络类型
             
             if let preferred = SIMSlotList.first(where: { $0.isDataPreferred }) { // 获取首选数据卡
                 let selectRate = preferred.supportedRates?.rates[indexPath.row]
@@ -390,8 +377,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 }
             }
 
-        } else if indexPath.section == 2 { // 管理蜂窝数据卡
-            if indexPath.row == 0 { // 关闭或者打开某个卡
+        } else if groupID == HomeItemGroupID.cellularPlanGroup { // 管理蜂窝数据卡
+            if item.id == HomeItemID.cellularPlan { // 关闭或者打开某个卡
                 if SettingsUtils.instance.getShowAlertWhenTurningOffCellularPlan() {
                     if let cellularPlan = CellularController.instance.getCellularPlan(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
                         if cellularPlan.isSelected { // 禁用某张卡
@@ -455,13 +442,13 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                     
                 }
                 
-            } else if indexPath.row == 1 { // 打开卡槽设置
+            } else if item.id == HomeItemID.selectCellularPlan { // 打开卡槽设置
                 self.navigationController!.pushViewController(SelectCellularPlanViewController(), animated: true)
             }
-        } else if indexPath.section == 3 { // 维护
-            if indexPath.row == 0 { // 刷新蜂窝网络信号
+        } else if groupID == HomeItemGroupID.maintenanceGroup { // 维护
+            if item.id == HomeItemID.refreshCellularConnection { // 刷新蜂窝网络信号
                 refreshCellularConnection()
-            } else if indexPath.row == 1 { // 重启基带服务
+            } else if item.id == HomeItemID.rebootCommCenter { // 重启基带服务
                 
                 // 设置一个弹窗
                 let alert = UIAlertController(
@@ -490,20 +477,18 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 // 显示弹窗
                 present(alert, animated: true, completion: nil)
             }
-        } else if indexPath.section == MainViewController.notificationsAtSection {
-            if indexPath.row == 1 && tableCellList[MainViewController.notificationsAtSection].count < 3 { // 跳转到通知设置
-                self.onClickToNotificationSettings()
-            } else if indexPath.row == 5 { // 发送通知
+        } else if groupID == HomeItemGroupID.notificationsGroup {
+            if item.id == HomeItemID.sendNotification { // 发送通知
                 self.onClickSendNotification()
-            } else if indexPath.row == 6 { // 跳转到通知设置
+            } else if item.id == HomeItemID.goToNotificationSettings { // 跳转到通知设置
                 self.onClickToNotificationSettings()
             }
-        } else if indexPath.section == MainViewController.aboutAtSection { // 关于
-            if indexPath.row == 1 {
+        } else if groupID == HomeItemGroupID.aboutGroup { // 关于
+            if item.id == HomeItemID.githubLink {
                 if let url = URL(string: "https://github.com/DevelopCubeLab/TrollSIMSwitcher") {
                     UIApplication.shared.open(url, options: [:], completionHandler: nil)
                 }
-            } else if indexPath.row == 2 {
+            } else if item.id == HomeItemID.havocLink {
                 if let url = URL(string: "https://havoc.app/package/trollsimswitch") {
                     UIApplication.shared.open(url, options: [:], completionHandler: nil)
                 }
@@ -514,7 +499,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     // MARK: - 长按 Cell 的菜单 (UIContextMenuConfiguration)
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         
-        if indexPath.section == 0 {
+        if tableCellList[indexPath.section].id == HomeItemGroupID.cellularDataGroup {
             
             let iccid = SIMSlotList[indexPath.row].ICCID
             
@@ -624,9 +609,10 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     private func onSwitchChanged(_ sender: UISwitch) {
-        if sender.tag == SettingsSwitchViewTag.EnableCompatibilitySwitchMode.rawValue {
+        switch sender.tag {
+        case SettingsSwitchViewTag.EnableCompatibilitySwitchMode:
             SettingsUtils.instance.setEnableCompatibilitySwitchMode(enable: sender.isOn)
-        } else if sender.tag == SettingsSwitchViewTag.ShowSlotLabel.rawValue {
+        case SettingsSwitchViewTag.ShowSlotLabel:
             SettingsUtils.instance.setShowSlotLabel(enable: sender.isOn)
             // 设置快捷方式
             SettingsUtils.instance.setHomeScreenQuickActions(application: UIApplication.shared)
@@ -634,118 +620,107 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             NotificationController.instance.sendNotifications(silentNotifications: true)
             tableView.reloadSections(IndexSet(integer: 0), with: .none)
             tableView.reloadSections(IndexSet(integer: 2), with: .none)
-        } else if sender.tag == SettingsSwitchViewTag.ShowOperatorName.rawValue {
+        case SettingsSwitchViewTag.ShowOperatorName:
             SettingsUtils.instance.setShowOperatorName(enable: sender.isOn)
             tableView.reloadSections(IndexSet(integer: 0), with: .none)
-        } else if sender.tag == SettingsSwitchViewTag.ShowPhoneNumber.rawValue {
+        case SettingsSwitchViewTag.ShowPhoneNumber:
             SettingsUtils.instance.setShowPhoneNumber(enable: sender.isOn)
             tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
-        } else if sender.tag == SettingsSwitchViewTag.ShowAlertWhenTurningOffCellularPlan.rawValue {
+        case SettingsSwitchViewTag.ShowAlertWhenTurningOffCellularPlan:
             SettingsUtils.instance.setShowAlertWhenTurningOffCellularPlan(enable: sender.isOn)
-        } else if sender.tag == SettingsSwitchViewTag.EnableHomeScreenQuickActions.rawValue {
+        case SettingsSwitchViewTag.EnableHomeScreenQuickActions:
             SettingsUtils.instance.setEnableHomeScreenQuickActions(enable: sender.isOn)
             // 设置快捷方式
             SettingsUtils.instance.setHomeScreenQuickActions(application: UIApplication.shared)
-        } else if sender.tag == SettingsSwitchViewTag.ExitAfterQuickSwitching.rawValue {
+        case SettingsSwitchViewTag.ExitAfterQuickSwitching:
             SettingsUtils.instance.setExitAfterQuickSwitching(enable: sender.isOn)
-        } else if sender.tag == SettingsSwitchViewTag.EnableNotifications.rawValue {
+        case SettingsSwitchViewTag.EnableNotifications:
             if sender.isOn {
                 // 判断通知权限
                 NotificationController.instance.ensureAuthorization { status in
                     DispatchQueue.main.async {
                         switch status {
-                        case .notDetermined: // 未授权
+                        case .notDetermined:
                             sender.setOn(false, animated: true)
-                            // 授权
                             NotificationController.instance.requestAuthorization { granted in
                                 DispatchQueue.main.async {
-                                    if !granted { // 拒绝授权
+                                    if !granted {
                                         sender.setOn(false, animated: true)
                                         SettingsUtils.instance.setEnableNotifications(enable: false)
                                         UIUtils.showAlert(message: NSLocalizedString("NotificationsPermissionDenied", comment: "通知权限已拒绝"), in: self)
                                     } else {
                                         sender.setOn(true, animated: true)
                                         SettingsUtils.instance.setEnableNotifications(enable: true)
+                                        // 发送通知
+                                        NotificationController.instance.sendNotifications(silentNotifications: true)
                                     }
                                     self.updateNotificationsCell()
                                 }
-
                             }
                             return
-                        case .authorized, .provisional, .ephemeral: // 已授权
+
+                        case .authorized, .provisional, .ephemeral:
                             SettingsUtils.instance.setEnableNotifications(enable: true)
                             sender.setOn(true, animated: true)
-                        case .denied: // 已拒绝
-                            UIUtils.showAlert(
-                                message: NSLocalizedString("NotificationsPermissionGoToSettings", comment: "通知权限已拒绝"),
-                                in: self
-                            )
+                            // 发送通知
+                            NotificationController.instance.sendNotifications(silentNotifications: true)
+
+                        case .denied:
+                            UIUtils.showAlert(message: NSLocalizedString("NotificationsPermissionGoToSettings", comment: "通知权限已拒绝"), in: self)
                             sender.setOn(false, animated: true)
+
                         @unknown default:
                             sender.setOn(false, animated: true)
                         }
+
                         self.updateNotificationsCell()
                     }
-
                 }
             } else {
-                // 用户关闭通知开关 → 仅更新设置
                 SettingsUtils.instance.setEnableNotifications(enable: false)
-                // 把所有通知删除
                 NotificationController.instance.clearAllNotifications()
                 updateNotificationsCell()
             }
-        } else if sender.tag == SettingsSwitchViewTag.EnableToggleCellularDataSlotNotifications.rawValue {
+        case SettingsSwitchViewTag.EnableToggleCellularDataSlotNotifications:
             SettingsUtils.instance.setEnableToggleCellularDataSlotNotifications(enable: sender.isOn)
-            // 刷新通知
             NotificationController.instance.sendNotifications(silentNotifications: true)
-        } else if sender.tag == SettingsSwitchViewTag.EnableToggleNetworkTypeNotifications.rawValue {
+        case SettingsSwitchViewTag.EnableToggleNetworkTypeNotifications:
             SettingsUtils.instance.setEnableToggleNetworkTypeNotifications(enable: sender.isOn)
-            // 刷新通知
             NotificationController.instance.sendNotifications(silentNotifications: true)
-        } else if sender.tag == SettingsSwitchViewTag.EnableToggleCellularPlanNotifications.rawValue {
+        case SettingsSwitchViewTag.EnableToggleCellularPlanNotifications:
             SettingsUtils.instance.setEnableToggleCellularPlanNotifications(enable: sender.isOn)
-            // 刷新通知
             NotificationController.instance.sendNotifications(silentNotifications: true)
-        } else if sender.tag == SettingsSwitchViewTag.UseCriticalNotifications.rawValue {
+        case SettingsSwitchViewTag.UseCriticalNotifications:
             if sender.isOn {
+                NotificationController.instance.requestAuthorization { _ in
+                    NotificationController.instance.isCriticalNotificationEnabled { enabled in
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else {
+                                return
+                            }
 
-                NotificationController.instance.requestAuthorization { _ in // 再次申请权限
-                        NotificationController.instance.isCriticalNotificationEnabled { enabled in
-
-                            DispatchQueue.main.async { [weak self] in
-                                guard let self = self else {
-                                    return
-                                }
-
-                                if enabled { // 拿到了重要通知权限
-                                    SettingsUtils.instance.setUseCriticalNotifications(enable: true)
-                                    // 刷新通知
-                                    NotificationController.instance.sendNotifications(silentNotifications: true)
-
-                                } else { // 没拿到 提示用户开启
-                                    sender.setOn(false, animated: true)
-                                    SettingsUtils.instance.setUseCriticalNotifications(enable: false)
-                                    UIUtils.showAlert(message: NSLocalizedString("CriticalAlertMessage", comment: ""), in: self)
-                                }
+                            if enabled {
+                                SettingsUtils.instance.setUseCriticalNotifications(enable: true)
+                                NotificationController.instance.sendNotifications(silentNotifications: true)
+                            } else {
+                                sender.setOn(false, animated: true)
+                                SettingsUtils.instance.setUseCriticalNotifications(enable: false)
+                                UIUtils.showAlert(message: NSLocalizedString("CriticalAlertMessage", comment: ""), in: self)
                             }
                         }
                     }
-
+                }
             } else {
                 SettingsUtils.instance.setUseCriticalNotifications(enable: false)
-                // 刷新通知
                 NotificationController.instance.sendNotifications(silentNotifications: true)
             }
-
+        default:
+            return
         }
     }
     
     // 更新通知的cell
     private func updateNotificationsCell() {
-        // 第一次先清空
-        tableCellList[MainViewController.notificationsAtSection] = []
-        tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("Enable", comment: ""))
 
         // 判断是否关闭了重要通知
         if SettingsUtils.instance.getUseCriticalNotifications() {
@@ -759,41 +734,70 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         // 必须等待权限查询完才能更新 UI
         NotificationController.instance.ensureAuthorization { status in
             DispatchQueue.main.async {
-                self.tableCellList[MainViewController.notificationsAtSection] = []
-                self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("Enable", comment: ""))
+
+                // 获取当前通知开关状态
+                var enableNotifications = SettingsUtils.instance.getEnableNotifications()
+
                 switch status {
                 case .authorized, .provisional, .ephemeral:
-                    if SettingsUtils.instance.getEnableNotifications() { // 用户开启开关 + 已授权
-                        // 切换流量卡的通知
-                        self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("ToggleCellularDataSlotNotifications", comment: ""))
-                        // 切换网络类型的通知
-                        self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("ToggleNetworkTypeNotifications", comment: ""))
-                        // 切换蜂窝数据卡的通知
-                        self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("ToggleCellularPlanNotifications", comment: ""))
-                        self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("UseCriticalNotifications", comment: ""))
-                        self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("SendNotifications", comment: ""))
-                        self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("GoToNotificationSettings", comment: ""))
-                    }
-                case .denied:
-                    self.tableCellList[MainViewController.notificationsAtSection].append(NSLocalizedString("GoToNotificationSettings", comment: ""))
-                    if SettingsUtils.instance.getEnableNotifications() { // 如果用户去设置里给通知关闭了，那开关也给关闭
+                    break
+
+                case .denied, .notDetermined:
+                    if enableNotifications {
                         SettingsUtils.instance.setEnableNotifications(enable: false)
+                        enableNotifications = false
                     }
-                case .notDetermined:
-                    if SettingsUtils.instance.getEnableNotifications() { // 修复一个bug，如果用户之前开启了通知，但是因为TrollStore里rebuild icon cache以后通知权限会重置，然后就会出现虽然通知开关开着但是是无效的，强制关闭app内的通知设置
-                        SettingsUtils.instance.setEnableNotifications(enable: false)
-                    }
+
                 @unknown default:
                     break
                 }
 
+                // 从列表中找到通知设置分组
+                let notificationsInfoGroup = self.tableCellList[MainViewController.notificationsAtSection]
+
+                // 清空通知设置
+                notificationsInfoGroup.clearItems()
+
+                // 添加总开关
+                notificationsInfoGroup.addItem(InfoItem(id: SettingsSwitchViewTag.EnableNotifications, text: NSLocalizedString("Enable", comment: "")))
+
+                switch status {
+                case .authorized, .provisional, .ephemeral:
+                    if enableNotifications {
+                        notificationsInfoGroup.addItems(self.getNotificationItems())
+                    }
+
+                case .denied:
+                    notificationsInfoGroup.addItem(InfoItem(id: HomeItemID.goToNotificationSettings, text: NSLocalizedString("GoToNotificationSettings", comment: "")))
+
+                case .notDetermined:
+                    break
+
+                @unknown default:
+                    break
+                }
+
+                // 刷新通知设置分组
                 self.tableView.reloadSections([MainViewController.notificationsAtSection], with: .none)
-                self.tableView.reloadSections(IndexSet(integer: 2), with: .none)
             }
         }
     }
+    
+    private func getNotificationItems() -> [InfoItem] {
+        return [
+            // 切换流量卡的通知
+            InfoItem(id: SettingsSwitchViewTag.EnableToggleCellularDataSlotNotifications, text: NSLocalizedString("ToggleCellularDataSlotNotifications", comment: "")),
+            // 切换网络类型的通知
+            InfoItem(id: SettingsSwitchViewTag.EnableToggleNetworkTypeNotifications, text: NSLocalizedString("ToggleNetworkTypeNotifications", comment: "")),
+            // 切换蜂窝数据卡的通知
+            InfoItem(id: SettingsSwitchViewTag.EnableToggleCellularPlanNotifications, text: NSLocalizedString("ToggleCellularPlanNotifications", comment: "")),
+            InfoItem(id: SettingsSwitchViewTag.UseCriticalNotifications, text: NSLocalizedString("UseCriticalNotifications", comment: "")),
+            InfoItem(id: HomeItemID.sendNotification, text: NSLocalizedString("SendNotifications", comment: "")),
+            InfoItem(id: HomeItemID.goToNotificationSettings, text: NSLocalizedString("GoToNotificationSettings", comment: ""))
+        ]
+    }
 
-    // 发送通知
+    /// 发送通知
     private func onClickSendNotification() {
 
         if !SettingsUtils.instance.getEnableToggleCellularDataSlotNotifications() && !SettingsUtils.instance.getEnableToggleNetworkTypeNotifications() && !SettingsUtils.instance.getEnableToggleCellularPlanNotifications() {
