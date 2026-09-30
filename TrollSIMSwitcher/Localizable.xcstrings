@@ -280,13 +280,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Disable Wi-Fi Auto-Join\n(AirDrop Keep)"
+            "value" : "Disable Wi-Fi Auto-Join\n(AirDrop Unaffected)"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "关闭Wi-Fi连接\n(AirDrop保持开启)"
+            "value" : "关闭Wi-Fi自动加入\n(AirDrop不受影响)"
           }
         }
       }
@@ -350,7 +350,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打开Wi-Fi连接"
+            "value" : "打开Wi-Fi自动加入"
           }
         }
       }
@@ -1154,6 +1154,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "切换网络类型通知"
+          }
+        }
+      }
+    },
+    "ToggleWi-Fi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle Wi-Fi\n(AirDrop Affected)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换Wi-Fi\n(AirDrop受影响)"
+          }
+        }
+      }
+    },
+    "ToggleWi-FiAuto-Join" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toggle Wi-Fi Auto-Join\n(AirDrop Unaffected)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换Wi-Fi自动加入\n(AirDrop不受影响)"
           }
         }
       }

@@ -11,9 +11,13 @@ struct TrollSIMSwitcherSlot1Intent: AppIntent {
     static var resultType: Bool.Type { Bool.self }
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let result = CellularController.instance.setDataSlot(slot: 1)
-        // 刷新通知
-        NotificationController.instance.sendNotifications(silentNotifications: true)
+        var result = CellularController.instance.setDataSlot(slot: 1)
+        if result {
+            // 执行切换后操作
+            result = ExtraActionController.instance.performExtraActions(slotID: 1)
+            // 刷新通知
+            NotificationController.instance.sendNotifications(silentNotifications: true)
+        }
         return .result(value: result)
     }
 }
@@ -26,9 +30,13 @@ struct TrollSIMSwitcherSlot2Intent: AppIntent {
     static var resultType: Bool.Type { Bool.self }
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let result = CellularController.instance.setDataSlot(slot: 2)
-        // 刷新通知
-        NotificationController.instance.sendNotifications(silentNotifications: true)
+        var result = CellularController.instance.setDataSlot(slot: 2)
+        if result {
+            // 执行切换后操作
+            result = ExtraActionController.instance.performExtraActions(slotID: 2)
+            // 刷新通知
+            NotificationController.instance.sendNotifications(silentNotifications: true)
+        }
         return .result(value: result)
     }
 }
@@ -41,9 +49,13 @@ struct TrollSIMSwitcherToggleSlotIntent: AppIntent {
     static var resultType: Bool.Type { Bool.self }
     
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> {
-        let result = CellularController.instance.toggleDataSlot()
-        // 刷新通知
-        NotificationController.instance.sendNotifications(silentNotifications: true)
+        var result = CellularController.instance.toggleDataSlot()
+        if result {
+            // 执行切换后操作
+            result = ExtraActionController.instance.performExtraActions(toggle: true)
+            // 刷新通知
+            NotificationController.instance.sendNotifications(silentNotifications: true)
+        }
         return .result(value: result)
     }
 }
@@ -80,7 +92,7 @@ struct TrollSIMSwitcherNetwork5GIntent: AppIntent {
     }
 }
 
-// 切换数据流量至另一个卡槽
+// 切换另一个网络类型
 @available(iOS 16, *)
 struct TrollSIMSwitcherToggleNetworkTypeIntent: AppIntent {
     static var title: LocalizedStringResource = "SwitchCellularNetworkMode"
@@ -255,6 +267,7 @@ struct CellularPlanQuery: EntityQuery { // 创建一个查询
     }
 }
 
+// 用户手动选择管理蜂窝数据卡的操作
 @available(iOS 16, *)
 struct TrollSIMSwitcherManageCellularPlanIntent: AppIntent {
 

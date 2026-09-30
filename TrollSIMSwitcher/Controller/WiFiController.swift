@@ -78,9 +78,9 @@ class WiFiController {
         return setWiFiPowerState(on: !getWiFiPowerState())
     }
     
-    // 获取 User Auto-Join 状态
-    // 是否允许暂时关闭WiFi的连接，但是WiFi本身不关掉，不影响airdrop
-    func getUserAutoJoinState() -> Bool {
+    // 获取WiFi Auto-Join 状态
+    // 获取是否允许暂时关闭WiFi的连接，但是WiFi本身不关掉，不影响AirDrop和Handoff
+    func getWiFiAutoJoinState() -> Bool {
         refreshHandles()
 
         guard let manager = manager else {
@@ -90,9 +90,9 @@ class WiFiController {
         return WiFiManagerClientGetUserAutoJoinState(manager) != 0
     }
 
-    // 启用 User Auto-Join
-    // 是否允许暂时关闭WiFi的连接，但是WiFi本身不关掉，不影响airdrop
-    func enableUserAutoJoin() -> Bool {
+    // 启用WiFi Auto-Join
+    // 是否允许暂时关闭WiFi的连接，但是WiFi本身不关掉，不影响AirDrop和Handoff
+    func enableWiFiAutoJoin() -> Bool {
         refreshHandles()
 
         guard let manager = manager else {
@@ -101,11 +101,11 @@ class WiFiController {
 
         WiFiManagerClientEnableUserAutoJoin(manager)
 
-        return getUserAutoJoinState()
+        return getWiFiAutoJoinState()
     }
 
-    // 禁用 User Auto-Join
-    func disableUserAutoJoin() -> Bool {
+    // 禁用WiFi Auto-Join
+    func disableWiFiAutoJoin() -> Bool {
         refreshHandles()
 
         guard let manager = manager else {
@@ -114,13 +114,18 @@ class WiFiController {
 
         WiFiManagerClientDisableUserAutoJoin(manager)
 
-        return !getUserAutoJoinState()
+        return !getWiFiAutoJoinState()
     }
 
-    // 设置 User Auto-Join
-    // 是否允许暂时关闭WiFi的连接，但是WiFi本身不关掉，不影响airdrop
-    func setUserAutoJoin(on: Bool) -> Bool {
-        return on ? enableUserAutoJoin() : disableUserAutoJoin()
+    // 设置WiFi Auto-Join
+    // 是否允许暂时关闭WiFi的连接，但是WiFi本身不关掉，不影响AirDrop和Handoff
+    func setWiFiAutoJoin(on: Bool) -> Bool {
+        return on ? enableWiFiAutoJoin() : disableWiFiAutoJoin()
+    }
+    
+    // 切换Wi-Fi连接状态
+    func toggleWiFiAutoJoin() -> Bool {
+        return setWiFiAutoJoin(on: !getWiFiAutoJoinState())
     }
     
     

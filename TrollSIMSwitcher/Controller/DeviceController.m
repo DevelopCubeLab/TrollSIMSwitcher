@@ -20,8 +20,6 @@ extern int posix_spawnattr_set_persona_gid_np(const posix_spawnattr_t* __restric
 
 - (Boolean) RebootCommCenter
 {
-//    killall(@"SpringBoard", YES);
-//    exit(0);
     NSString *path = [[NSBundle mainBundle] pathForResource:@"MaintenanceHelper" ofType:@""];
 
     NSArray *args = @[]; // 不需要任何额外参数
@@ -233,7 +231,8 @@ void enumerateProcessesUsingBlock(void (^enumerator)(pid_t pid, NSString* execut
 		free(info);
 		return;
 	}
-	count = length / sizeof(struct kinfo_proc);
+//	count = length / sizeof(struct kinfo_proc);
+    count = (int)(length / sizeof(struct kinfo_proc));
 	for (int i = 0; i < count; i++) {
 		@autoreleasepool {
 		pid_t pid = info[i].kp_proc.p_pid;

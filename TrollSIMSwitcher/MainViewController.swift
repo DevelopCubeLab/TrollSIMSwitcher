@@ -21,7 +21,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         view.backgroundColor = .systemBackground
         navigationItem.title = NSLocalizedString("CFBundleDisplayName", comment: "")
         
-        loadSIMSlots()
+        // 加载数据
+        loadTableData()
 
         // iOS 15 之后的版本使用新的UITableView样式
         if #available(iOS 15.0, *) {
@@ -61,7 +62,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     // 更新数据和更新UI
     @objc private func updateSIMList() {
         DispatchQueue.main.async {
-            self.loadSIMSlots()
+            self.loadTableData()
             if !self.isContextMenuVisible { // 只有菜单没有展开的时候才刷新Cell
                 self.tableView.reloadData()
             }
@@ -74,7 +75,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     // 加载卡槽信息
-    private func loadSIMSlots() {
+    private func loadTableData() {
         SIMSlotList = []
         // 获取全部已经启用的卡槽信息
         SIMSlotList = CellularController.instance.getAllEnabledSlots()
@@ -499,10 +500,11 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     // MARK: - 长按 Cell 的菜单 (UIContextMenuConfiguration)
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         
-        if tableCellList[indexPath.section].id == HomeItemGroupID.cellularDataGroup {
+        if tableCellList[indexPath.section].id == HomeItemGroupID.cellularDataGroup { // 只允许蜂窝数据这个section长按
             
+            // 获取当前操作卡槽的ICCID
             let iccid = SIMSlotList[indexPath.row].ICCID
-            
+            // 获取当前设置的action
             let currentAction = SettingsUtils.instance.getSwitchSlotExtraActions(iccid: iccid).first ?? .None
             
             let noneAction = UIAction(
@@ -510,56 +512,54 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 image: nil,
                 state: currentAction == .None ? .on : .off
             ) { _ in
-                SettingsUtils.instance.setSwitchSlotExtraActions(
-                    iccid: iccid,
-                    actions: [.None]
-                )
-            }
-            
-            let turnOffWiFiAction = UIAction(
-                title: NSLocalizedString("TurnOffWi-Fi", comment: ""),
-                image: UIImage(systemName: "wifi.slash"),
-                state: currentAction == .TurnOffWiFi ? .on : .off
-            ) { _ in
-                SettingsUtils.instance.setSwitchSlotExtraActions(
-                    iccid: iccid,
-                    actions: [.TurnOffWiFi]
-                )
+                SettingsUtils.instance.setSwitchSlotExtraActions(iccid: iccid, actions: [.None])
             }
             
             let turnOnWiFiAction = UIAction(
                 title: NSLocalizedString("TurnOnWi-Fi", comment: ""),
                 image: UIImage(systemName: "wifi"),
-                state: currentAction == .TurnOnWiFi ? .on : .off
-            ) { _ in
-                SettingsUtils.instance.setSwitchSlotExtraActions(
-                    iccid: iccid,
-                    actions: [.TurnOnWiFi]
-                )
+                state: currentAction == .TurnOnWiFi ? .on : .off) { _ in
+                    SettingsUtils.instance.setSwitchSlotExtraActions(iccid: iccid, actions: [.TurnOnWiFi])
             }
             
-            let disableWiFiConnectAction = UIAction(
-                title: NSLocalizedString("DisableWi-FiAuto-Join", comment: ""),
+            let turnOffWiFiAction = UIAction(
+                title: NSLocalizedString("TurnOffWi-Fi", comment: ""),
                 image: UIImage(systemName: "wifi.slash"),
-                state: currentAction == .DisableWiFiConnect ? .on : .off
-            ) { _ in
-                SettingsUtils.instance.setSwitchSlotExtraActions(
-                    iccid: iccid,
-                    actions: [.DisableWiFiConnect]
-                )
+                state: currentAction == .TurnOffWiFi ? .on : .off) { _ in
+                    SettingsUtils.instance.setSwitchSlotExtraActions(iccid: iccid, actions: [.TurnOffWiFi])
             }
             
-            let enableWiFiConnectAction = UIAction(
+            let toggleWiFiAction = UIAction(
+                title: NSLocalizedString("ToggleWi-Fi", comment: ""),
+                image: UIImage(systemName: "arrow.triangle.2.circlepath"),
+                state: currentAction == .ToggleWiFi ? .on : .off
+            ) { _ in
+                SettingsUtils.instance.setSwitchSlotExtraActions(iccid: iccid, actions: [.ToggleWiFi])
+            }
+            
+            let enableWiFiAutoJoinAction = UIAction(
                 title: NSLocalizedString("EnableWi-FiAuto-Join", comment: ""),
-                image: UIImage(systemName: "wifi"),
-                state: currentAction == .EnableWiFiConnect ? .on : .off
+                image: UIImage(systemName: "wifi")?.withTintColor(.systemBlue, renderingMode: .alwaysOriginal),
+                state: currentAction == .EnableWiFiAutoJoin ? .on : .off
             ) { _ in
-                SettingsUtils.instance.setSwitchSlotExtraActions(
-                    iccid: iccid,
-                    actions: [.EnableWiFiConnect]
-                )
+                SettingsUtils.instance.setSwitchSlotExtraActions(iccid: iccid, actions: [.EnableWiFiAutoJoin])
             }
             
+            let disableWiFiAutoJoinAction = UIAction(
+                title: NSLocalizedString("DisableWi-FiAuto-Join", comment: ""),
+                image: UIImage(systemName: "wifi.slash")?.withTintColor(.systemBlue, renderingMode: .alwaysOriginal),
+                state: currentAction == .DisableWiFiAutoJoin ? .on : .off
+            ) { _ in
+                SettingsUtils.instance.setSwitchSlotExtraActions(iccid: iccid, actions: [.DisableWiFiAutoJoin])
+            }
+            
+            let toggleWiFiAutoJoinAction = UIAction(
+                title: NSLocalizedString("ToggleWi-FiAuto-Join", comment: ""),
+                image: UIImage(systemName: "arrow.triangle.2.circlepath")?.withTintColor(.systemBlue, renderingMode: .alwaysOriginal),
+                state: currentAction == .ToggleWiFiAutoJoin ? .on : .off
+            ) { _ in
+                SettingsUtils.instance.setSwitchSlotExtraActions(iccid: iccid, actions: [.ToggleWiFiAutoJoin])
+            }
             let menu = UIMenu(
                 title: NSLocalizedString("AfterSwitching", comment: ""),
                 children: [
@@ -572,15 +572,17 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                     UIMenu(
                         options: .displayInline,
                         children: [
+                            turnOnWiFiAction,
                             turnOffWiFiAction,
-                            turnOnWiFiAction
+                            toggleWiFiAction
                         ]
                     ),
                     UIMenu(
                         options: .displayInline,
                         children: [
-                            disableWiFiConnectAction,
-                            enableWiFiConnectAction
+                            enableWiFiAutoJoinAction,
+                            disableWiFiAutoJoinAction,
+                            toggleWiFiAutoJoinAction
                         ]
                     )
                 ]
@@ -608,6 +610,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
+    /// 当开关被点击时的回调
     private func onSwitchChanged(_ sender: UISwitch) {
         switch sender.tag {
         case SettingsSwitchViewTag.EnableCompatibilitySwitchMode:

@@ -43,8 +43,10 @@ class ExtraActionController {
         case .None: return true
         case .TurnOnWiFi: return WiFiController.instance.setWiFiPowerState(on: true)
         case .TurnOffWiFi: return WiFiController.instance.setWiFiPowerState(on: false)
-        case .EnableWiFiConnect: return WiFiController.instance.setUserAutoJoin(on: true)
-        case .DisableWiFiConnect: return WiFiController.instance.setUserAutoJoin(on: false)
+        case .ToggleWiFi: return WiFiController.instance.toggleWiFiPowerState()
+        case .EnableWiFiAutoJoin: return WiFiController.instance.setWiFiAutoJoin(on: true)
+        case .DisableWiFiAutoJoin: return WiFiController.instance.setWiFiAutoJoin(on: false)
+        case .ToggleWiFiAutoJoin: return WiFiController.instance.toggleWiFiAutoJoin()
         }
     }
     
