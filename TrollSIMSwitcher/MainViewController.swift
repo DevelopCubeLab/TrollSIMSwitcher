@@ -508,7 +508,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             let currentAction = SettingsUtils.instance.getSwitchSlotExtraActions(iccid: iccid).first ?? .None
             
             let noneAction = UIAction(
-                title: NSLocalizedString("None", comment: ""),
+                title: NSLocalizedString("NoAction", comment: ""),
                 image: nil,
                 state: currentAction == .None ? .on : .off
             ) { _ in

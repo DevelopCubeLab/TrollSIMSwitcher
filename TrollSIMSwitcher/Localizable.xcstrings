@@ -499,6 +499,22 @@
         }
       }
     },
+    "NoAction" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Action"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无操作"
+          }
+        }
+      }
+    },
     "NoCellularPlanFound" : {
       "localizations" : {
         "en" : {
@@ -527,22 +543,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "没有选择蜂窝数据卡"
-          }
-        }
-      }
-    },
-    "None" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "None"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无"
           }
         }
       }

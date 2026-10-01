@@ -3,8 +3,6 @@ import UIKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     
-    var window: UIWindow?
-    
     // 用于存储启动时的快捷方式
     var pendingQuickAction: UIApplicationShortcutItem?
     
@@ -19,113 +17,93 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         // 注册通知分类
         NotificationController.instance.setupNotificationCategories()
         
-        window = UIWindow(frame: UIScreen.main.bounds)
-        window!.rootViewController = UINavigationController(rootViewController: MainViewController())
-        window!.makeKeyAndVisible()
-        
-        // 检查是否通过快捷方式启动
-        if let shortcutItem = launchOptions?[.shortcutItem] as? UIApplicationShortcutItem {
-            pendingQuickAction = shortcutItem // 保存快捷方式
-        }
-        
         return true
     }
     
-    // MARK: - App 激活后处理启动快捷方式
-    func applicationDidBecomeActive(_ application: UIApplication) {
+    // MARK: - 创建和加载默认的Scene
+    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
         
-        if let item = pendingQuickAction {
-            handleQuickAction(itemID: item.type)
-            pendingQuickAction = nil
-        }
+        let configuration = UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
         
-        NotificationCenter.default.post(name: Notification.Name("CoreTelephonyUpdated"), object: nil)
-    }
-    
-    // MARK: - 前台时的桌面快捷方式处理
-    func application(_ application: UIApplication, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
+        configuration.delegateClass = SceneDelegate.self
         
-        handleQuickAction(itemID: shortcutItem.type)
-        completionHandler(true)
-    }
-    
-    // MARK: - 处理点击锁屏Widget的方法
-    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        
-        handleQuickAction(itemID: userActivity.activityType)
-        
-        return true
+        return configuration
     }
     
     // MARK: - 处理快捷操作
-    private func handleQuickAction(itemID: String) {
+    func handleQuickAction(itemID: String, windowScene: UIWindowScene? = nil) {
         
-        if let viewController = window?.rootViewController { //获取当前的View Controller
-            var switchSlot: Bool = false
-            var switchSuccessful: Bool = true
-            
-            switch itemID {
-            case "TrollSIMSwitcherSlot1", SettingsUtils.SwitchToSlot1ID: // 切换到卡槽1
-                if CellularController.instance.setDataSlot(slot: 1) {
-                    switchSlot = true
-                    // 执行点击后的操作
-                    switchSuccessful = ExtraActionController.instance.performExtraActions(slotID: 1)
-                } else {
-                    switchSuccessful = false
-                }
-            case "TrollSIMSwitcherSlot2", SettingsUtils.SwitchToSlot2ID: // 切换到卡槽2
-                if CellularController.instance.setDataSlot(slot: 2) {
-                    switchSlot = true
-                    // 执行点击后的操作
-                    switchSuccessful = ExtraActionController.instance.performExtraActions(slotID: 2)
-                } else {
-                    switchSuccessful = false
-                }
-            case "TrollSIMSwitcherToggleSlot": // 切换到另一个卡槽
-                if CellularController.instance.toggleDataSlot() {
-                    switchSlot = true
-                    // 执行点击后的操作
-                    switchSuccessful = ExtraActionController.instance.performExtraActions(toggle: true)
-                } else {
-                    switchSuccessful = false
-                }
-            case "TrollSIMSwitcherToggleNetworkType": // 自动切换4G/5G
-                switchSuccessful = CellularController.instance.toggleDataPreferredRate()
-            case "TrollSIMSwitcher4G", SettingsUtils.SwitchTo4GID:    // 切换到4G
-                switchSuccessful = CellularController.instance.setDataPreferredRate(selectRate: ._4G)
-            case "TrollSIMSwitcher5G", SettingsUtils.SwitchTo5GID:    // 切换到5G
-                switchSuccessful = CellularController.instance.setDataPreferredRate(selectRate: ._5G)
-            case SettingsUtils.SwitchTo2GID: // 切换到2G
-                switchSuccessful = CellularController.instance.setDataPreferredRate(selectRate: ._2G)
-            case SettingsUtils.SwitchTo3GID: // 切换到3G
-                switchSuccessful = CellularController.instance.setDataPreferredRate(selectRate: ._3G)
-            case "TrollSIMSwitcherTurnOnCellularPlan": // 打开蜂窝数据卡
-                switchSuccessful = CellularController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: true)
-            case "TrollSIMSwitcherTurnOffCellularPlan": // 关闭蜂窝数据卡
-                switchSuccessful = CellularController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: false)
-            case "TrollSIMSwitcherToggleCellularPlan": // 切换蜂窝数据卡状态
-                switchSuccessful = CellularController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1())
-            case "TrollSIMSwitcherRebootCommCenter": // 重启基带服务
-                let deviceController = DeviceController()
-                switchSuccessful = deviceController.rebootCommCenter()
-            case "TrollSIMSwitcherRefreshCellularConnection": // 刷新蜂窝网络信号
-                switchSuccessful =  CellularController.instance.refreshCellularConnection()
-            default: return
-            }
-            
-            if switchSlot { // 补发通知
-                NotificationController.instance.sendNotifications(silentNotifications: true, groupIdentifier: NotificationController.switchSlotGroupIdentifier)
+        // 获取当前的 View Controller
+        let viewController = (windowScene ?? UIApplication.shared.connectedScenes.first {
+            $0.activationState == .foregroundActive
+        } as? UIWindowScene)?.windows.first(where: {
+            $0.isKeyWindow
+        })?.rootViewController
+        
+        var switchSlot: Bool = false
+        var switchSuccessful: Bool = true
+        
+        switch itemID {
+        case "TrollSIMSwitcherSlot1", SettingsUtils.SwitchToSlot1ID: // 切换到卡槽1
+            if CellularController.instance.setDataSlot(slot: 1) {
+                switchSlot = true
+                // 执行点击后的操作
+                switchSuccessful = ExtraActionController.instance.performExtraActions(slotID: 1)
             } else {
-                // 补发普通通知
-                NotificationController.instance.sendNotifications(silentNotifications: true)
+                switchSuccessful = false
             }
-            if switchSuccessful {
-                UIUtils.exitApplicationAfterSwitching()
+        case "TrollSIMSwitcherSlot2", SettingsUtils.SwitchToSlot2ID: // 切换到卡槽2
+            if CellularController.instance.setDataSlot(slot: 2) {
+                switchSlot = true
+                // 执行点击后的操作
+                switchSuccessful = ExtraActionController.instance.performExtraActions(slotID: 2)
             } else {
-                UIUtils.showAlert(message: NSLocalizedString("ActionFailed", comment: ""), in: viewController)
+                switchSuccessful = false
             }
+        case "TrollSIMSwitcherToggleSlot": // 切换到另一个卡槽
+            if CellularController.instance.toggleDataSlot() {
+                switchSlot = true
+                // 执行点击后的操作
+                switchSuccessful = ExtraActionController.instance.performExtraActions(toggle: true)
+            } else {
+                switchSuccessful = false
+            }
+        case "TrollSIMSwitcherToggleNetworkType": // 自动切换4G/5G
+            switchSuccessful = CellularController.instance.toggleDataPreferredRate()
+        case "TrollSIMSwitcher4G", SettingsUtils.SwitchTo4GID:    // 切换到4G
+            switchSuccessful = CellularController.instance.setDataPreferredRate(selectRate: ._4G)
+        case "TrollSIMSwitcher5G", SettingsUtils.SwitchTo5GID:    // 切换到5G
+            switchSuccessful = CellularController.instance.setDataPreferredRate(selectRate: ._5G)
+        case SettingsUtils.SwitchTo2GID: // 切换到2G
+            switchSuccessful = CellularController.instance.setDataPreferredRate(selectRate: ._2G)
+        case SettingsUtils.SwitchTo3GID: // 切换到3G
+            switchSuccessful = CellularController.instance.setDataPreferredRate(selectRate: ._3G)
+        case "TrollSIMSwitcherTurnOnCellularPlan": // 打开蜂窝数据卡
+            switchSuccessful = CellularController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: true)
+        case "TrollSIMSwitcherTurnOffCellularPlan": // 关闭蜂窝数据卡
+            switchSuccessful = CellularController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: false)
+        case "TrollSIMSwitcherToggleCellularPlan": // 切换蜂窝数据卡状态
+            switchSuccessful = CellularController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1())
+        case "TrollSIMSwitcherRebootCommCenter": // 重启基带服务
+            let deviceController = DeviceController()
+            switchSuccessful = deviceController.rebootCommCenter()
+        case "TrollSIMSwitcherRefreshCellularConnection": // 刷新蜂窝网络信号
+            switchSuccessful = CellularController.instance.refreshCellularConnection()
+        default: return
         }
         
+        if switchSlot { // 补发通知
+            NotificationController.instance.sendNotifications(silentNotifications: true, groupIdentifier: NotificationController.switchSlotGroupIdentifier)
+        } else {
+            // 补发普通通知
+            NotificationController.instance.sendNotifications(silentNotifications: true)
+        }
+        
+        if switchSuccessful {
+            UIUtils.exitApplicationAfterSwitching()
+        } else if let viewController {
+            UIUtils.showAlert(message: NSLocalizedString("ActionFailed", comment: ""), in: viewController)
+        }
     }
     
     // MARK: 前台也显示通知（横幅/列表），没有声音就不会响
@@ -220,4 +198,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
 }
-
