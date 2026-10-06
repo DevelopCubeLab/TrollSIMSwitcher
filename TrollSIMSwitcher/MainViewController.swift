@@ -6,12 +6,12 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     private var tableView = UITableView()
     
-    private var tableCellList: [InfoItemGroup] = []
-
-    private static let notificationsAtSection = 6
+    private var tableCellList: InfoItemGroupList = InfoItemGroupList()
     
     private var SIMSlotList: [SIMSlot] = []
     
+    // 是否正在刷新列表
+    private var isRefreshingTableView = false
     // 是否长按展开了菜单
     private var isContextMenuVisible = false
     
@@ -21,8 +21,11 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         view.backgroundColor = .systemBackground
         navigationItem.title = NSLocalizedString("CFBundleDisplayName", comment: "")
         
-        // 加载数据
+        // 加载列表数据
         loadTableData()
+        
+        // 刷新数据
+        refreshTableData()
 
         // iOS 15 之后的版本使用新的UITableView样式
         if #available(iOS 15.0, *) {
@@ -62,7 +65,9 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     // 更新数据和更新UI
     @objc private func updateSIMList() {
         DispatchQueue.main.async {
-            self.loadTableData()
+            self.isRefreshingTableView = true
+            self.refreshTableData()
+            self.isRefreshingTableView = false
             if !self.isContextMenuVisible { // 只有菜单没有展开的时候才刷新Cell
                 self.tableView.reloadData()
             }
@@ -74,37 +79,19 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         NotificationCenter.default.removeObserver(self, name: Notification.Name("CoreTelephonyUpdated"), object: nil)
     }
     
-    // 加载卡槽信息
+    // 首次进入加载列表数据
     private func loadTableData() {
-        SIMSlotList = []
-        // 获取全部已经启用的卡槽信息
-        SIMSlotList = CellularController.instance.getAllEnabledSlots()
-        // 清空列表信息
-        tableCellList = []
-        // 蜂窝网络分组
-        let cellularDataInfoGroup = InfoItemGroup(id: HomeItemGroupID.cellularDataGroup, titleText: NSLocalizedString("CellularData", comment: ""))
-        // 网络类型分组
-        let networkTypeInfoGroup = InfoItemGroup(id: HomeItemGroupID.networkTypeGroup, titleText: NSLocalizedString("NetworkType", comment: ""))
-        for slot in SIMSlotList {
-            // 将当前的蜂窝数据选项加入信息组
-            cellularDataInfoGroup.addItem(InfoItem(id: slot.slot, text: "", selected: slot.isDataPreferred))
-            if slot.isDataPreferred { // 判断是否是首选蜂窝数据卡
-                // 获取首选蜂窝数据卡的网络类型
-                if let rates = slot.supportedRates?.rates {
-                    for case let rate as Int in rates {
-                        // 把网络类型的选项加入信息组
-                        networkTypeInfoGroup.addItem(InfoItem(id: rate, text: CellularUtils.getRateText(rate: rate), selected: rate == slot.currentRate))
-                    }
-                }
-            }
+        // 设置列表数据
+        tableCellList.append(InfoItemGroup(id: HomeItemGroupID.cellularDataGroup, titleText: NSLocalizedString("CellularData", comment: ""))) // 蜂窝网络分组
+        tableCellList.append(InfoItemGroup(id: HomeItemGroupID.networkTypeGroup, titleText: NSLocalizedString("NetworkType", comment: ""))) // 网络类型分组
+        
+        if AppCapability.canManagerCellularPlan() { // 有蜂窝数据卡管理权限的时候再给这个分组
+            // 蜂窝数据卡分组
+            let cellularPlanInfoGroup = InfoItemGroup(id: HomeItemGroupID.cellularPlanGroup, titleText: NSLocalizedString("CellularPlan", comment: ""))
+            cellularPlanInfoGroup.addItem(InfoItem(id: HomeItemID.cellularPlan, text: NSLocalizedString("SelectCellularPlan", comment: "")))
+            cellularPlanInfoGroup.addItem(InfoItem(id: HomeItemID.selectCellularPlan, text: NSLocalizedString("SelectCellularPlan", comment: "")))
+            tableCellList.append(cellularPlanInfoGroup)
         }
-        tableCellList.append(cellularDataInfoGroup)
-        tableCellList.append(networkTypeInfoGroup)
-        // 蜂窝数据卡分组
-        let cellularPlanInfoGroup = InfoItemGroup(id: HomeItemGroupID.cellularPlanGroup, titleText: NSLocalizedString("CellularPlan", comment: ""))
-        cellularPlanInfoGroup.addItem(InfoItem(id: HomeItemID.cellularPlan, text: NSLocalizedString("SelectCellularPlan", comment: "")))
-        cellularPlanInfoGroup.addItem(InfoItem(id: HomeItemID.selectCellularPlan, text: NSLocalizedString("SelectCellularPlan", comment: "")))
-        tableCellList.append(cellularPlanInfoGroup)
         // 维护分组
         let maintenanceInfoGroup = InfoItemGroup(id: HomeItemGroupID.maintenanceGroup, titleText: NSLocalizedString("Maintenance", comment: ""), items: [
             InfoItem(id: HomeItemID.refreshCellularConnection, text: NSLocalizedString("RefreshCellularConnection", comment: "")),
@@ -140,6 +127,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         tableCellList.append(notificationsInfoGroup)
         
+        // 关于分组
         let aboutInfoGroup = InfoItemGroup(id: HomeItemGroupID.aboutGroup, titleText: NSLocalizedString("About", comment: ""), items: [
             InfoItem(id: HomeItemID.versionCode, text: NSLocalizedString("Version", comment: "")),
             InfoItem(id: HomeItemID.githubLink, text: "GitHub"),
@@ -147,6 +135,37 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         ])
         
         tableCellList.append(aboutInfoGroup)
+    }
+    
+    // 刷新卡槽信息
+    private func refreshTableData() {
+        SIMSlotList = []
+        // 获取全部已经启用的卡槽信息
+        SIMSlotList = CellularController.instance.getAllEnabledSlots()
+        
+        // 获取蜂窝网络分组和网络类型分组
+        guard let cellularDataInfoGroup = tableCellList.getGroup(withID: HomeItemGroupID.cellularDataGroup), let networkTypeInfoGroup = tableCellList.getGroup(withID: HomeItemGroupID.networkTypeGroup) else {
+            return
+        }
+        
+        // 清理掉数据
+        cellularDataInfoGroup.clearItems()
+        networkTypeInfoGroup.clearItems()
+        
+        for slot in SIMSlotList {
+            // 将当前的蜂窝数据选项加入信息组
+            cellularDataInfoGroup.addItem(InfoItem(id: slot.slot, text: "", selected: slot.isDataPreferred))
+            if slot.isDataPreferred { // 判断是否是首选蜂窝数据卡
+                // 获取首选蜂窝数据卡的网络类型
+                if let rates = slot.supportedRates?.rates {
+                    for case let rate as Int in rates {
+                        // 把网络类型的选项加入信息组
+                        networkTypeInfoGroup.addItem(InfoItem(id: rate, text: CellularUtils.getRateText(rate: rate), selected: rate == slot.currentRate))
+                    }
+                }
+            }
+        }
+        
         // 刷新通知分组
         updateNotificationsCell()
         
@@ -156,35 +175,35 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
 
     // MARK: - 设置总分组数量
     func numberOfSections(in tableView: UITableView) -> Int {
-        return tableCellList.count
+        return tableCellList.groups.count
     }
     
     // MARK: - 设置每个分组的Cell数量
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return tableCellList[section].items.count
+        return tableCellList.groups[section].items.count
     }
     
     // MARK: - 设置每个分组的顶部标题
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return tableCellList[section].titleText
+        return tableCellList.groups[section].titleText
     }
     
     // MARK: - 设置每个分组的底部标题 可以为分组设置尾部文本，如果没有尾部可以返回 nil
     func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        return tableCellList[section].footerText
+        return tableCellList.groups[section].footerText
     }
     
     // MARK: - 构造每个Cell
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell = UITableViewCell(style: .default, reuseIdentifier: "Cell")
         // 设置文本
-        cell.textLabel?.text = tableCellList[indexPath.section].items[indexPath.row].text
+        cell.textLabel?.text = tableCellList.groups[indexPath.section].items[indexPath.row].text
         cell.textLabel?.numberOfLines = 0 // 允许换行
         
         // 获取分组ID
-        let groupID = tableCellList[indexPath.section].id
+        let groupID = tableCellList.groups[indexPath.section].id
         // 获取item
-        let item = tableCellList[indexPath.section].items[indexPath.row]
+        let item = tableCellList.groups[indexPath.section].items[indexPath.row]
         
         if groupID == HomeItemGroupID.cellularDataGroup { // 卡槽选择
             cell = UITableViewCell(style: .subtitle, reuseIdentifier: "Cell")
@@ -310,6 +329,10 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 }
             case SettingsSwitchViewTag.EnableToggleCellularPlanNotifications:
                 switchView.isOn = SettingsUtils.instance.getEnableToggleCellularPlanNotifications() // 从配置文件中获取状态
+                if !AppCapability.canManagerCellularPlan() { // 没有蜂窝数据卡管理权限就不允许打开这一组的通知
+                    cell.textLabel?.textColor = .lightGray //文本变成灰色
+                    switchView.isEnabled = false // 禁用开关
+                }
             case SettingsSwitchViewTag.UseCriticalNotifications:
                 switchView.isOn = SettingsUtils.instance.getUseCriticalNotifications() // 从配置文件中获取状态
             default:
@@ -325,7 +348,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         } else if groupID == HomeItemGroupID.aboutGroup { // 关于
             if item.id == HomeItemID.versionCode {
                 cell = UITableViewCell(style: .value1, reuseIdentifier: "cell")
-                cell.textLabel?.text = tableCellList[indexPath.section].items[indexPath.row].text
+                cell.textLabel?.text = tableCellList.groups[indexPath.section].items[indexPath.row].text
                 let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? NSLocalizedString("Unknown", comment: "未知")
                 if version != MainViewController.versionCode { // 判断版本号是不是有人篡改
                     cell.detailTextLabel?.text = MainViewController.versionCode
@@ -349,9 +372,9 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         tableView.deselectRow(at: indexPath, animated: true)
         
         // 获取分组ID
-        let groupID = tableCellList[indexPath.section].id
+        let groupID = tableCellList.groups[indexPath.section].id
         // 获取item
-        let item = tableCellList[indexPath.section].items[indexPath.row]
+        let item = tableCellList.groups[indexPath.section].items[indexPath.row]
         
         if groupID == HomeItemGroupID.cellularDataGroup { // 切换数据流量卡
             if CellularController.instance.setDataSlot(SIMSlot: SIMSlotList[indexPath.row]) {
@@ -402,8 +425,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                             // "确定" 按钮（红色，左边）
                             let deleteAction = UIAlertAction(title: NSLocalizedString("TurnOff", comment: ""), style: .destructive) { _ in
                                 if CellularController.instance.setCellularPlanEnable(planID: cellularPlan.identifier, enable: false) {
-                                    // 刷新当前的cell
-                                    tableView.reloadSections(IndexSet(integer: 2), with: .none)
+                                    self.reloadSection(groupID: groupID) // 刷新当前的cell
                                     // 补发普通通知
                                     NotificationController.instance.sendNotifications(silentNotifications: true)
                                 }
@@ -421,8 +443,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                             
                         } else { // 开启蜂窝数据卡不需要弹窗提醒
                             if CellularController.instance.setCellularPlanEnable(planID: cellularPlan.identifier, enable: true) {
-                                // 刷新当前的cell
-                                tableView.reloadSections(IndexSet(integer: 2), with: .none)
+                                self.reloadSection(groupID: groupID) // 刷新当前的cell
                                 // 补发普通通知
                                 NotificationController.instance.sendNotifications(silentNotifications: true)
                             }
@@ -435,8 +456,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                     }
                 } else { // 不弹出警告的时候直接切换
                     if CellularController.instance.toggleCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1()) {
-                        // 刷新当前的cell
-                        tableView.reloadSections(IndexSet(integer: 2), with: .none)
+                        self.reloadSection(groupID: groupID) // 刷新当前的cell
                         // 补发普通通知
                         NotificationController.instance.sendNotifications(silentNotifications: true)
                     }
@@ -500,7 +520,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     // MARK: - 长按 Cell 的菜单 (UIContextMenuConfiguration)
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         
-        if tableCellList[indexPath.section].id == HomeItemGroupID.cellularDataGroup { // 只允许蜂窝数据这个section长按
+        if tableCellList.groups[indexPath.section].id == HomeItemGroupID.cellularDataGroup && !isRefreshingTableView { // 只允许蜂窝数据这个section长按并且不能正在刷新列表，否则UI会变成白色很奇怪
             
             // 获取当前操作卡槽的ICCID
             let iccid = SIMSlotList[indexPath.row].ICCID
@@ -621,14 +641,14 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             SettingsUtils.instance.setHomeScreenQuickActions(application: UIApplication.shared)
             // 补发普通通知
             NotificationController.instance.sendNotifications(silentNotifications: true)
-            tableView.reloadSections(IndexSet(integer: 0), with: .none)
-            tableView.reloadSections(IndexSet(integer: 2), with: .none)
+            self.reloadSection(groupID: HomeItemGroupID.cellularDataGroup) // 刷新蜂窝数据分组
+            self.reloadSection(groupID: HomeItemGroupID.cellularPlanGroup) // 刷新蜂窝数据卡分组
         case SettingsSwitchViewTag.ShowOperatorName:
             SettingsUtils.instance.setShowOperatorName(enable: sender.isOn)
-            tableView.reloadSections(IndexSet(integer: 0), with: .none)
+            self.reloadSection(groupID: HomeItemGroupID.cellularDataGroup) // 刷新蜂窝数据分组
         case SettingsSwitchViewTag.ShowPhoneNumber:
             SettingsUtils.instance.setShowPhoneNumber(enable: sender.isOn)
-            tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
+            self.reloadSection(groupID: HomeItemGroupID.cellularDataGroup) // 刷新蜂窝数据分组
         case SettingsSwitchViewTag.ShowAlertWhenTurningOffCellularPlan:
             SettingsUtils.instance.setShowAlertWhenTurningOffCellularPlan(enable: sender.isOn)
         case SettingsSwitchViewTag.EnableHomeScreenQuickActions:
@@ -726,6 +746,13 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
+    // 刷新某一个分组
+    private func reloadSection(groupID: Int) {
+        if let section = tableCellList.getSection(ofGroupID: groupID) {
+            tableView.reloadSections(IndexSet(integer: section), with: .none)
+        }
+    }
+    
     // 更新通知的cell
     private func updateNotificationsCell() {
 
@@ -760,7 +787,9 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 }
 
                 // 从列表中找到通知设置分组
-                let notificationsInfoGroup = self.tableCellList[MainViewController.notificationsAtSection]
+                guard let notificationsInfoGroup = self.tableCellList.getGroup(withID: HomeItemGroupID.notificationsGroup) else {
+                    return
+                }
 
                 // 清空通知设置
                 notificationsInfoGroup.clearItems()
@@ -785,7 +814,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 }
 
                 // 刷新通知设置分组
-                self.tableView.reloadSections([MainViewController.notificationsAtSection], with: .none)
+                self.reloadSection(groupID: HomeItemGroupID.notificationsGroup)
             }
         }
     }
