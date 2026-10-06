@@ -4,6 +4,8 @@ import UserNotifications
 class NotificationController {
     // 单例模式
     static let instance = NotificationController()
+    
+    // 私有构造方法
     private init() {
         //
     }
@@ -110,7 +112,7 @@ class NotificationController {
 
     // MARK: - 发送：快捷入口（参数化）
     /// - Parameters:
-    ///   - title: 通知标题（例如："快速打开 App"）
+    ///   - title: 通知标题
     ///   - groupIdentifier 当前通知分组的ID
     ///   - actionIdentifier 当前通知的ID
     ///   - style 发送通知的类型
@@ -148,13 +150,7 @@ class NotificationController {
 
             // 先判断是否开启紧急通知
             if SettingsUtils.instance.getUseCriticalNotifications(), settings?.criticalAlertSetting == .enabled {
-                if #available(iOS 15.0, *) {
-                    content.sound = UNNotificationSound.defaultCriticalSound(withAudioVolume: 0.0) // 必须设置这个声音，但是其实是个没有声音的提示，但是这样可以激活重要通知
-                } else {
-                    // 必须设置这个声音，但是其实是个没有声音的提示，但是这样可以激活重要通知 iOS 14可能无法可靠的发送重要通知
-                    content.sound = UNNotificationSound.criticalSoundNamed(UNNotificationSoundName(""), withAudioVolume: 0.0)
-                }
-                
+                content.sound = UNNotificationSound.defaultCriticalSound(withAudioVolume: 0.0) // 必须设置这个声音，但是其实是个没有声音的提示，但是这样可以激活重要通知
             } else if #available(iOS 15.0, *) { // 实效性通知 Time Sensitive（iOS 15+）
                 // 再判断是否开启实效性通知
                 if preferTimeSensitive, settings?.timeSensitiveSetting == .enabled {
@@ -177,17 +173,13 @@ class NotificationController {
         }
 
         // 权限判断
-        if #available(iOS 15.0, *) {
-            getSettings { settings in
-                switch settings.authorizationStatus {
-                case .authorized, .provisional, .ephemeral:
-                    post(settings)
-                default:
-                    return
-                }
+        getSettings { settings in
+            switch settings.authorizationStatus {
+            case .authorized, .provisional, .ephemeral:
+                post(settings)
+            default:
+                return
             }
-        } else {
-            post(nil)
         }
     }
 

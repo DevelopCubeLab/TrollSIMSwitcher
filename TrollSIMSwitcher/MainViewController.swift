@@ -708,7 +708,11 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                             } else {
                                 sender.setOn(false, animated: true)
                                 SettingsUtils.instance.setUseCriticalNotifications(enable: false)
-                                UIUtils.showAlert(message: NSLocalizedString("CriticalAlertMessage", comment: ""), in: self)
+                                if AppCapability.hasCriticalAlerts() { // 判断是否有重要通知权利
+                                    UIUtils.showAlert(message: NSLocalizedString("CriticalAlertMessage", comment: ""), in: self)
+                                } else {
+                                    UIUtils.showAlert(message: NSLocalizedString("NoPermission", comment: ""), in: self)
+                                }
                             }
                         }
                     }
@@ -788,13 +792,15 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     private func getNotificationItems() -> [InfoItem] {
         return [
+            // 使用重要通知
+            InfoItem(id: SettingsSwitchViewTag.UseCriticalNotifications, text: NSLocalizedString("UseCriticalNotifications", comment: "")),
             // 切换流量卡的通知
             InfoItem(id: SettingsSwitchViewTag.EnableToggleCellularDataSlotNotifications, text: NSLocalizedString("ToggleCellularDataSlotNotifications", comment: "")),
             // 切换网络类型的通知
             InfoItem(id: SettingsSwitchViewTag.EnableToggleNetworkTypeNotifications, text: NSLocalizedString("ToggleNetworkTypeNotifications", comment: "")),
             // 切换蜂窝数据卡的通知
             InfoItem(id: SettingsSwitchViewTag.EnableToggleCellularPlanNotifications, text: NSLocalizedString("ToggleCellularPlanNotifications", comment: "")),
-            InfoItem(id: SettingsSwitchViewTag.UseCriticalNotifications, text: NSLocalizedString("UseCriticalNotifications", comment: "")),
+            // 发送通知和跳转通知设置
             InfoItem(id: HomeItemID.sendNotification, text: NSLocalizedString("SendNotifications", comment: "")),
             InfoItem(id: HomeItemID.goToNotificationSettings, text: NSLocalizedString("GoToNotificationSettings", comment: ""))
         ]

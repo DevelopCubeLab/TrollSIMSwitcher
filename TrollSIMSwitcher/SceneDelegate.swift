@@ -18,6 +18,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let shortcutItem = connectionOptions.shortcutItem {
             (UIApplication.shared.delegate as? AppDelegate)?.pendingQuickAction = shortcutItem
         }
+        
+        // 检查是否通过Widget启动
+        if let userActivity = connectionOptions.userActivities.first {
+            (UIApplication.shared.delegate as? AppDelegate)?.handleQuickAction(itemID: userActivity.activityType)
+        }
+        
     }
     
     // MARK: - App 激活后处理启动快捷方式
