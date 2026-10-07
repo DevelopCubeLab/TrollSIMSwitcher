@@ -24,7 +24,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
         
         let configuration = UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
-        
         configuration.delegateClass = SceneDelegate.self
         
         return configuration
@@ -100,23 +99,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
         
         if switchSuccessful {
-            UIUtils.exitApplicationAfterSwitching()
+            UIUtils.exitApplicationAfterAction()
         } else if let viewController {
             UIUtils.showAlert(message: NSLocalizedString("ActionFailed", comment: ""), in: viewController)
         }
     }
     
     // MARK: 前台也显示通知（横幅/列表），没有声音就不会响
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                willPresent notification: UNNotification,
-                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler(NotificationController.instance.presentationOptions(for: notification))
     }
 
     // MARK: 点击通知的回调
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                didReceive response: UNNotificationResponse,
-                                withCompletionHandler completionHandler: @escaping () -> Void) {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         
         let request = response.notification.request
         let userInfo = request.content.userInfo
@@ -133,37 +128,41 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             case NotificationController.switchToSlot1Identifier:
                 if CellularController.instance.setDataSlot(slot: 1) {
                     // 执行点击后的操作
-                    _ = ExtraActionController.instance.performExtraActions(slotID: 1)
+                    ExtraActionController.instance.performExtraActions(slotID: 1)
                     slotID = 1
                     // 判断是否退出app
-                    UIUtils.exitApplicationAfterSwitching()
+                    UIUtils.exitApplicationAfterAction()
                 }
             case NotificationController.switchToSlot2Identifier:
                 if CellularController.instance.setDataSlot(slot: 2) {
                     // 执行点击后的操作
-                    _ = ExtraActionController.instance.performExtraActions(slotID: 2)
+                    ExtraActionController.instance.performExtraActions(slotID: 2)
                     slotID = 2
-                    UIUtils.exitApplicationAfterSwitching()
+                    UIUtils.exitApplicationAfterAction()
                 }
             case NotificationController.switch3GIdentifier:
                 if CellularController.instance.setDataPreferredRate(selectRate: DataRates._3G) {
-                    UIUtils.exitApplicationAfterSwitching()
+                    UIUtils.exitApplicationAfterAction()
                 }
             case NotificationController.switch4GIdentifier:
                 if CellularController.instance.setDataPreferredRate(selectRate: DataRates._4G) {
-                    UIUtils.exitApplicationAfterSwitching()
+                    UIUtils.exitApplicationAfterAction()
                 }
             case NotificationController.switch5GIdentifier:
                 if CellularController.instance.setDataPreferredRate(selectRate: DataRates._5G) {
-                    UIUtils.exitApplicationAfterSwitching()
+                    UIUtils.exitApplicationAfterAction()
                 }
             case NotificationController.turnOnCellularPlanIdentifier:
                 if CellularController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: true) {
-                    UIUtils.exitApplicationAfterSwitching()
+                    UIUtils.exitApplicationAfterAction()
                 }
             case NotificationController.turnOffCellularPlanIdentifier:
                 if CellularController.instance.setCellularPlanEnable(planID: SettingsUtils.instance.getSelectCellularPlan1(), enable: false) {
-                    UIUtils.exitApplicationAfterSwitching()
+                    UIUtils.exitApplicationAfterAction()
+                }
+            case NotificationController.refreshCellularConnectionIdentifier:
+                if CellularController.instance.refreshCellularConnection() {
+                    UIUtils.exitApplicationAfterAction()
                 }
             default: break
             }
@@ -178,6 +177,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     SettingsUtils.instance.setEnableToggleNetworkTypeNotifications(enable: false)
                 } else if groupID == NotificationController.switchCellularPlanGroupIdentifier { // 关闭切换蜂窝数据卡的通知
                     SettingsUtils.instance.setEnableToggleCellularPlanNotifications(enable: false)
+                } else if groupID == NotificationController.maintenanceGroupIdentifier { // 关闭维护的通知
+                    SettingsUtils.instance.setEnableRefreshCellularConnectionNotifications(enable: false)
                 }
             }
 

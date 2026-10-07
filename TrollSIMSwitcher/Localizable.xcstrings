@@ -355,18 +355,18 @@
         }
       }
     },
-    "ExitAfterQuickSwitching" : {
+    "ExitAfterQuickAction" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exit App After Quick Switching"
+            "value" : "Exit App After Quick Action"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "快捷切换后退出应用程序"
+            "value" : "快捷操作后退出应用程序"
           }
         }
       }
@@ -785,6 +785,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "确认刷新蜂窝网络信号？\n刷新蜂窝网络信号会暂时中断蜂窝网络连接。"
+          }
+        }
+      }
+    },
+    "RefreshCellularConnectionNotifications" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh Cellular Connection Notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刷新蜂窝网络信号通知"
           }
         }
       }

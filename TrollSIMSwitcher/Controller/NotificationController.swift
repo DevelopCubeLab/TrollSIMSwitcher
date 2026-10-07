@@ -33,6 +33,9 @@ class NotificationController {
     static let switchCellularPlanGroupIdentifier = "com.developlab.TrollSIMSwitcher.notification.switch.cellularPlan"
     static let turnOnCellularPlanIdentifier = "com.developlab.TrollSIMSwitcher.notification.plan.on"
     static let turnOffCellularPlanIdentifier = "com.developlab.TrollSIMSwitcher.notification.plan.off"
+    /// 刷新蜂窝网络信号的标识符
+    static let maintenanceGroupIdentifier = "com.developlab.TrollSIMSwitcher.notification.action.maintenance"
+    static let refreshCellularConnectionIdentifier = "com.developlab.TrollSIMSwitcher.notification.action.refreshCellularConnection"
     /// 长按通知的标识符
     static let disableNotificationCategoryID = "com.developlab.TrollSIMSwitcher.notification.disable.group"
     static let disableAllNotificationsActionID = "com.developlab.TrollSIMSwitcher.notification.disable.all"
@@ -270,6 +273,10 @@ class NotificationController {
                     }
                 }
             }
+        }
+        // 发送刷新蜂窝网络信号类型的通知
+        if SettingsUtils.instance.getEnableRefreshCellularConnectionNotifications() {
+            postNotification(title: NSLocalizedString("RefreshCellularConnection", comment: ""), groupIdentifier: NotificationController.maintenanceGroupIdentifier, actionIdentifier: NotificationController.refreshCellularConnectionIdentifier)
         }
         
     }

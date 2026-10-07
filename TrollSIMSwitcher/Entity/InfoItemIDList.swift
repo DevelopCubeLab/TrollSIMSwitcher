@@ -31,12 +31,13 @@ enum SettingsSwitchViewTag {
     static let ShowSlotLabel = 1
     static let ShowOperatorName = 2
     static let ShowPhoneNumber = 3
-    static let EnableHomeScreenQuickActions = 4
-    static let ExitAfterQuickSwitching = 5
-    static let EnableNotifications = 6
-    static let EnableToggleCellularDataSlotNotifications = 7
-    static let EnableToggleNetworkTypeNotifications = 8
-    static let EnableToggleCellularPlanNotifications = 9
-    static let UseCriticalNotifications = 10
-    static let ShowAlertWhenTurningOffCellularPlan = 11
+    static let ShowAlertWhenTurningOffCellularPlan = 4
+    static let EnableHomeScreenQuickActions = 5
+    static let ExitAfterQuickAction = 6
+    static let EnableNotifications = 7
+    static let UseCriticalNotifications = 8
+    static let EnableToggleCellularDataSlotNotifications = 9
+    static let EnableToggleNetworkTypeNotifications = 10
+    static let EnableToggleCellularPlanNotifications = 11
+    static let EnableRefreshCellularConnectionNotifications = 12
 }

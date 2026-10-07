@@ -112,7 +112,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         // 快捷切换分组
         let shortcutsInfoGroup = InfoItemGroup(id: HomeItemGroupID.shortcutsGroup, titleText: NSLocalizedString("Shortcuts", comment: ""), items: [
             InfoItem(id: SettingsSwitchViewTag.EnableHomeScreenQuickActions, text: NSLocalizedString("HomeScreenQuickActions", comment: "")),
-            InfoItem(id: SettingsSwitchViewTag.ExitAfterQuickSwitching, text: NSLocalizedString("ExitAfterQuickSwitching", comment: ""))
+            InfoItem(id: SettingsSwitchViewTag.ExitAfterQuickAction, text: NSLocalizedString("ExitAfterQuickAction", comment: ""))
         ], footerText: nil)
         tableCellList.append(shortcutsInfoGroup)
         
@@ -308,10 +308,12 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 switchView.isOn = SettingsUtils.instance.getShowAlertWhenTurningOffCellularPlan() // 从配置文件中获取状态
             case SettingsSwitchViewTag.EnableHomeScreenQuickActions:
                 switchView.isOn = SettingsUtils.instance.getEnableHomeScreenQuickActions() // 从配置文件中获取状态
-            case SettingsSwitchViewTag.ExitAfterQuickSwitching:
-                switchView.isOn = SettingsUtils.instance.getExitAfterQuickSwitching() // 从配置文件中获取状态
+            case SettingsSwitchViewTag.ExitAfterQuickAction:
+                switchView.isOn = SettingsUtils.instance.getExitAfterQuickAction() // 从配置文件中获取状态
             case SettingsSwitchViewTag.EnableNotifications:
                 switchView.isOn = SettingsUtils.instance.getEnableNotifications() // 从配置文件中获取状态
+            case SettingsSwitchViewTag.UseCriticalNotifications:
+                switchView.isOn = SettingsUtils.instance.getUseCriticalNotifications() // 从配置文件中获取状态
             case SettingsSwitchViewTag.EnableToggleCellularDataSlotNotifications:
                 switchView.isOn = SettingsUtils.instance.getEnableToggleCellularDataSlotNotifications() // 从配置文件中获取状态
                 if SIMSlotList.count < 1 { // 只有单卡的情况
@@ -333,8 +335,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                     cell.textLabel?.textColor = .lightGray //文本变成灰色
                     switchView.isEnabled = false // 禁用开关
                 }
-            case SettingsSwitchViewTag.UseCriticalNotifications:
-                switchView.isOn = SettingsUtils.instance.getUseCriticalNotifications() // 从配置文件中获取状态
+            case SettingsSwitchViewTag.EnableRefreshCellularConnectionNotifications:
+                switchView.isOn = SettingsUtils.instance.getEnableRefreshCellularConnectionNotifications() // 从配置文件中获取状态
             default:
                 break
             }
@@ -379,7 +381,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         if groupID == HomeItemGroupID.cellularDataGroup { // 切换数据流量卡
             if CellularController.instance.setDataSlot(SIMSlot: SIMSlotList[indexPath.row]) {
                 // 执行点击后的操作
-                _ = ExtraActionController.instance.performExtraActions(iccid: SIMSlotList[indexPath.row].ICCID)
+                ExtraActionController.instance.performExtraActions(iccid: SIMSlotList[indexPath.row].ICCID)
                 // 补发通知
                 NotificationController.instance.sendNotifications(silentNotifications: true, groupIdentifier: NotificationController.switchSlotGroupIdentifier, switchedSlotID: SIMSlotList[indexPath.row].slot)
             }
@@ -655,8 +657,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             SettingsUtils.instance.setEnableHomeScreenQuickActions(enable: sender.isOn)
             // 设置快捷方式
             SettingsUtils.instance.setHomeScreenQuickActions(application: UIApplication.shared)
-        case SettingsSwitchViewTag.ExitAfterQuickSwitching:
-            SettingsUtils.instance.setExitAfterQuickSwitching(enable: sender.isOn)
+        case SettingsSwitchViewTag.ExitAfterQuickAction:
+            SettingsUtils.instance.setExitAfterQuickAction(enable: sender.isOn)
         case SettingsSwitchViewTag.EnableNotifications:
             if sender.isOn {
                 // 判断通知权限
@@ -712,6 +714,9 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             NotificationController.instance.sendNotifications(silentNotifications: true)
         case SettingsSwitchViewTag.EnableToggleCellularPlanNotifications:
             SettingsUtils.instance.setEnableToggleCellularPlanNotifications(enable: sender.isOn)
+            NotificationController.instance.sendNotifications(silentNotifications: true)
+        case SettingsSwitchViewTag.EnableRefreshCellularConnectionNotifications:
+            SettingsUtils.instance.setEnableRefreshCellularConnectionNotifications(enable: sender.isOn)
             NotificationController.instance.sendNotifications(silentNotifications: true)
         case SettingsSwitchViewTag.UseCriticalNotifications:
             if sender.isOn {
@@ -829,6 +834,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             InfoItem(id: SettingsSwitchViewTag.EnableToggleNetworkTypeNotifications, text: NSLocalizedString("ToggleNetworkTypeNotifications", comment: "")),
             // 切换蜂窝数据卡的通知
             InfoItem(id: SettingsSwitchViewTag.EnableToggleCellularPlanNotifications, text: NSLocalizedString("ToggleCellularPlanNotifications", comment: "")),
+            // 刷新蜂窝网络信号
+            InfoItem(id: SettingsSwitchViewTag.EnableRefreshCellularConnectionNotifications, text: NSLocalizedString("RefreshCellularConnectionNotifications", comment: "")),
             // 发送通知和跳转通知设置
             InfoItem(id: HomeItemID.sendNotification, text: NSLocalizedString("SendNotifications", comment: "")),
             InfoItem(id: HomeItemID.goToNotificationSettings, text: NSLocalizedString("GoToNotificationSettings", comment: ""))
@@ -838,7 +845,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     /// 发送通知
     private func onClickSendNotification() {
 
-        if !SettingsUtils.instance.getEnableToggleCellularDataSlotNotifications() && !SettingsUtils.instance.getEnableToggleNetworkTypeNotifications() && !SettingsUtils.instance.getEnableToggleCellularPlanNotifications() {
+        if !SettingsUtils.instance.getIsAnyNotificationsEnabled() {
             // 没有开启任何通知，发出提示
             UIUtils.showAlert(message: NSLocalizedString("NoNotificationEnabledMessage", comment: ""), in: self)
             return

@@ -128,11 +128,11 @@ class SettingsUtils {
     }
     
     /// 获取是否切换后退出应用程序
-    func getExitAfterQuickSwitching() -> Bool {
+    func getExitAfterQuickAction() -> Bool {
         return plistManager.getBool(key: "ExitAfterQuickSwitching", defaultValue: false)
     }
     
-    func setExitAfterQuickSwitching(enable: Bool) {
+    func setExitAfterQuickAction(enable: Bool) {
         plistManager.setBool(key: "ExitAfterQuickSwitching", value: enable)
         plistManager.apply()
     }
@@ -189,7 +189,7 @@ class SettingsUtils {
     
     /// 获取是否开启切换网络类型通知
     func getEnableToggleNetworkTypeNotifications() -> Bool {
-        return plistManager.getBool(key: "EnableToggleNetworkTypeNotifications", defaultValue: true)
+        return plistManager.getBool(key: "EnableToggleNetworkTypeNotifications", defaultValue: AppCapability.hasCommCenterSPI()) // 根据SPI权利返回默认值，否则无权限设备也返回true不合理
     }
     
     func setEnableToggleNetworkTypeNotifications(enable: Bool) {
@@ -205,6 +205,21 @@ class SettingsUtils {
     func setEnableToggleCellularPlanNotifications(enable: Bool) {
         plistManager.setBool(key: "EnableToggleCellularPlanNotifications", value: enable)
         plistManager.apply()
+    }
+    
+    /// 获取是否开启刷新蜂窝网络信号类型通知
+    func getEnableRefreshCellularConnectionNotifications() -> Bool {
+        return plistManager.getBool(key: "EnableRefreshCellularConnectionNotifications", defaultValue: false)
+    }
+    
+    func setEnableRefreshCellularConnectionNotifications(enable: Bool) {
+        plistManager.setBool(key: "EnableRefreshCellularConnectionNotifications", value: enable)
+        plistManager.apply()
+    }
+    
+    /// 获取是否开启了任意一种通知类型
+    func getIsAnyNotificationsEnabled() -> Bool {
+        return getEnableToggleCellularDataSlotNotifications() || getEnableToggleNetworkTypeNotifications() || getEnableToggleCellularPlanNotifications() || getEnableRefreshCellularConnectionNotifications()
     }
     
     // 获取切换卡槽流量后的操作
@@ -257,7 +272,6 @@ class SettingsUtils {
             // 获取全部卡槽信息
             var SIMSlotList = CellularController.instance.getAllSIMSlots()
             if  SIMSlotList.isEmpty { // 没拿到数据，要么是不支持的设备要么就是没权限
-//                setEnableHomeScreenQuickActions(enable: false)
                 application.shortcutItems = []
                 return
             }
