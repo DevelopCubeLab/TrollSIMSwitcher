@@ -42,7 +42,7 @@ class NotificationController {
     static let disableThisGroupNotificationsActionID = "com.developlab.TrollSIMSwitcher.notification.disable.thisGroup"
 
     // 获取切换网络类型的标识符
-    static func getToggleNetworkTypeNotificationIdentifier(rate: Int64) -> String {
+    static func getToggleNetworkTypeNotificationIdentifier(rate: Int) -> String {
         switch rate {
 //        case DataRates._2G.rawValue: return NotificationController.switch2GIdentifier
         case DataRates._3G.rawValue: return NotificationController.switch3GIdentifier
@@ -244,8 +244,8 @@ class NotificationController {
                 }
                 return $0.isDataPreferred
             }) { // 获取首选数据卡
-                if dataSlot.supportedRates?.rates.count ?? 0 > 1 { // 超过一个网络类型时才发送通知
-                    for rate in dataSlot.supportedRates?.rates as! [Int64] {
+                if dataSlot.supportedRates.count > 1 { // 超过一个网络类型时才发送通知
+                    for rate in dataSlot.supportedRates {
                         if rate != dataSlot.currentRate && rate != DataRates._2G.rawValue { // 不发送当前网络类型一致的通知,并且不发送切换到2G的通知，都什么年代了有人用2G？
                             // 发送通知
                             postNotification(title: String.localizedStringWithFormat(NSLocalizedString("SwitchFromTo", comment: ""), NSLocalizedString("NetworkType", comment: ""),  CellularUtils.getRateText(rate: Int(rate))), groupIdentifier: NotificationController.switchNetworkTypeGroupIdentifier, actionIdentifier: NotificationController.getToggleNetworkTypeNotificationIdentifier(rate: rate), style: postStyle)

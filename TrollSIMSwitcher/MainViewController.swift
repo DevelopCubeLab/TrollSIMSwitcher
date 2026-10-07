@@ -157,11 +157,9 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
             cellularDataInfoGroup.addItem(InfoItem(id: slot.slot, text: "", selected: slot.isDataPreferred))
             if slot.isDataPreferred { // 判断是否是首选蜂窝数据卡
                 // 获取首选蜂窝数据卡的网络类型
-                if let rates = slot.supportedRates?.rates {
-                    for case let rate as Int in rates {
-                        // 把网络类型的选项加入信息组
-                        networkTypeInfoGroup.addItem(InfoItem(id: rate, text: CellularUtils.getRateText(rate: rate), selected: rate == slot.currentRate))
-                    }
+                for case let rate in slot.supportedRates {
+                    // 把网络类型的选项加入信息组
+                    networkTypeInfoGroup.addItem(InfoItem(id: rate, text: CellularUtils.getRateText(rate: rate), selected: rate == slot.currentRate))
                 }
             }
         }
@@ -214,12 +212,12 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 cell.textLabel?.text = String.localizedStringWithFormat(NSLocalizedString("SlotNumber", comment: ""), (indexPath.row + 1))
             }
             if SettingsUtils.instance.getShowOperatorName() { // 显示运营商名称
-                if !slot.operatorName.isEmpty {
+                if !slot.operatorName.isEmpty { // 运营商如果不是无服务则显示运营商名称
                     cell.textLabel?.text = "\(cell.textLabel?.text ?? "") - \(slot.operatorName)"
-                } else if slot.registrationStatus == "kCTRegistrationStatusNotRegistered" { // 无服务
-                    cell.textLabel?.text = "\(cell.textLabel?.text ?? "") - \(NSLocalizedString("NoService", comment: ""))"
-                } else if slot.registrationStatus == "kCTRegistrationStatusEmergencyOnly" { // 仅限紧急呼叫
-                    cell.textLabel?.text = "\(cell.textLabel?.text ?? "") - \(NSLocalizedString("EmergencyOnly", comment: ""))"
+                } else if CellularController.instance.getDeviceAirplaneModeEnabled() { // 判断下是否为飞行模式
+                    cell.textLabel?.text = "\(cell.textLabel?.text ?? "") - \(NSLocalizedString("AirplaneMode", comment: ""))"
+                } else { // 否则显示无服务原因
+                    cell.textLabel?.text = "\(cell.textLabel?.text ?? "") - \(CoreTelephonyEnumMapper.localizedRegistrationStatusText(status: slot.registrationStatus))"
                 }
             }
             if SettingsUtils.instance.getShowPhoneNumber() { // 显示电话号码
@@ -324,7 +322,7 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
                 switchView.isOn = SettingsUtils.instance.getEnableToggleNetworkTypeNotifications() // 从配置文件中获取状态
                 let preferred = SIMSlotList.first(where: { $0.isDataPreferred })
                 if preferred != nil || SIMSlotList.isEmpty { // 获取首选数据卡
-                    if preferred?.supportedRates?.rates.count ?? 0 < 2 { // 少于两个网络类型则不支持这组通知，没有什么意义
+                    if preferred?.supportedRates.count ?? 0 < 2 { // 少于两个网络类型则不支持这组通知，没有什么意义
                         cell.textLabel?.textColor = .lightGray //文本变成灰色
                         switchView.isEnabled = false // 禁用开关
                     }
@@ -388,13 +386,11 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         } else if groupID == HomeItemGroupID.networkTypeGroup { // 切换网络类型
             
             if let preferred = SIMSlotList.first(where: { $0.isDataPreferred }) { // 获取首选数据卡
-                let selectRate = preferred.supportedRates?.rates[indexPath.row]
-                if CellularController.instance.setDataRate(SIMSlot: SIMSlotList.first(where: { $0.isDataPreferred })!, selectRate: selectRate as! Int64) {
+                let selectRate = preferred.supportedRates[indexPath.row]
+                if CellularController.instance.setDataRate(SIMSlot: SIMSlotList.first(where: { $0.isDataPreferred })!, selectRate: selectRate) {
                     // 取消之前的选择 因为等待数据刷新大概需要1秒，会导致操作不连贯，不符合直觉，所以先在UI操作下，等待系统自动刷新数据
-                    if let indices = preferred.supportedRates?.rates.indices {
-                        for i in indices {
-                            tableView.cellForRow(at: IndexPath(row: i, section: indexPath.section))?.accessoryType = .none
-                        }
+                    for i in preferred.supportedRates.indices {
+                        tableView.cellForRow(at: IndexPath(row: i, section: indexPath.section))?.accessoryType = .none
                     }
                     // 选择当前的网络类型
                     tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark

@@ -116,9 +116,35 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         return result
     }
     
+    /// 获取卡槽支持并且可选择的网络类型
+    /// 返回值 1 = 2G
+    /// 返回值 2 = 3G
+    /// 返回值 3 = 4G
+    /// 返回值 4 = 5G
+    /// 不允许更改网络类型的SIM卡/运营商返回nil
+    func getSlotSupportRates(context: CTXPCServiceSubscriptionContext) -> [Int64] {
+        do {
+            return try coreTelephonyClient.getSupportedDataRates(context).rates as? [Int64] ?? []
+        } catch {
+            return []
+        }
+    }
+    
     /// 获取当前卡槽的ICCID
     func getSlotICCID(context: CTXPCServiceSubscriptionContext) throws -> String? {
         return try coreTelephonyClient.copySIMIdentity(context)
+    }
+    
+    // 获取卡槽中卡的ICCID
+    func getSlotICCID(slotID: Int) -> String? {
+        do {
+            if let context = getServiceSubscriptionContext(slot: slotID) {
+                return try getSlotICCID(context: context)
+            }
+        } catch {
+            return nil
+        }
+        return nil
     }
     
     /// 获取当前卡槽的卡标签
@@ -186,6 +212,7 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         return try coreTelephonyClient.copyRegistrationStatus(context)
     }
     
+    // 设置蜂窝数据首选卡
     func setActiveUserDataSelection(context: CTXPCServiceSubscriptionContext) throws {
         var error: NSError? // 创建一个接收错误信息的对象
         coreTelephonyClient.setActiveUserDataSelection(context, error: &error)
@@ -203,65 +230,8 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         _CTServerConnectionResetModem(connection, reason)
     }
     
-    // 获取所有SIM卡卡槽信息
-    func getAllSIMSlots() -> [SIMSlot] {
-        var slots: [SIMSlot] = []
-        
-        let slotCount = getDeviceSlotCount() // 获取卡槽数量
-        
-        if slotCount == 0 { // 拒绝Wi-Fi版iPad或者证书签名情况
-            return []
-        }
-
-        for slot in 1...slotCount {
-            //获取当前卡槽信息
-            if let context = getServiceSubscriptionContext(slot: slot) {
-                do {
-                    // 获取当前卡槽位
-                    let slot = Int(context.slotID)
-                    // 获取当前卡槽的UUID
-                    let uuid = context.uuid ?? UUID()
-                    // 获取当前卡槽的ICCID
-                    let iccid = try getSlotICCID(context: context) ?? ""
-                    // 获取当前卡标签
-                    let label = try getSlotLabelText(context: context)
-                    // 获取当前运营商的名称
-                    let operatorName = try getSlotLocalizedOperatorName(context: context)
-                    // 获取当前卡的电话号码
-                    let phoneNumber = try getSlotPhoneNumber(context: context)
-                    // 获取当前SIM卡状态
-                    let isEnabled = try getSlotSIMStatus(context: context) == "kCTSIMSupportSIMStatusReady"
-                    // 获取当前信号注册状态
-                    let registrationStatus = try getSlotRegistrationStatus(context: context)
-                    // 判断是否是当前的卡槽是首选流量卡
-                    let isDataPreferred = try getDataPreferredSlotID() == slot
-                    // 获取当前卡支持的网络类型
-                    let supportedDataRates = try coreTelephonyClient.getSupportedDataRates(context)
-                    // 判断是否支持5G
-    //                let supported5G = coreTelephonyClient!.getSupports5G(context, error: nil) // 获取不到 永远返回false
-                    var supported5G = false
-                    if let rates = supportedDataRates.rates as? [Int64] {
-                        supported5G = rates.contains(DataRates._5G.rawValue)
-                    }
-                    // 获取当前卡设置的网络类型
-                    let currentRate = try getSlotSelectRate(context: context)
-                    // 获取当前卡槽的IMEI
-                    let IMEIValue = slot == 1 ? getDeviceIMEI1() : getDeviceIMEI2()
-                    
-                    slots.append(SIMSlot(slot: slot, uuid: uuid, ICCID: iccid, label: label, operatorName: operatorName, phoneNumber: phoneNumber, registrationStatus: registrationStatus, isEnabled: isEnabled, isDataPreferred: isDataPreferred, supportedRates: supportedDataRates, currentRate: currentRate, supports5G: supported5G, IMEI: IMEIValue))
-                    
-                } catch {
-                    //
-                }
-                
-            } else { // 未获取到卡槽上下文，跳过
-                continue
-            }
-        }
-        
-        return slots
-    }
-    
+    // 设置蜂窝数据卡
+    @discardableResult // 这个方法有返回值，但调用者可以选择不使用这个返回值，编译器不要警告
     func setDataSlot(slotID: Int) -> Bool {
         if slotID <= 0 || slotID >= getDeviceSlotCount() + 1 { // 切换不能超过IMEI的最大容量，否则肯定失败
             return false
@@ -279,65 +249,25 @@ class CoreTelephonyController: NSObject, CoreTelephonyClientDelegate, CoreTeleph
         return false
     }
     
-    // 获取卡槽中卡的ICCID
-    func getSlotCardICCID(slotID: Int) -> String? {
-        do {
-            if let context = getServiceSubscriptionContext(slot: slotID) {
-                return try getSlotICCID(context: context)
-            }
-        } catch {
-            return nil
-        }
-        return nil
-    }
-    
-    // 获取全部已经启用的卡槽信息
-    func getAllEnabledSlots() -> [SIMSlot] {
-        var SIMSlotList = getAllSIMSlots()
-        if SIMSlotList.count > 1 { // 解决下iPad没启用蜂窝数据的时候什么都不显示的情况
-            // 筛选掉未启用的卡槽信息
-            SIMSlotList = SIMSlotList.filter { $0.isEnabled }
-        }
-        return SIMSlotList
-    }
-    
-    // 设置蜂窝数据卡的网络类型
-    func setDataRate(SIMSlot: SIMSlot, selectRate: Int64) -> Bool {
-        return setDataRate(slot: SIMSlot.slot, selectRate: selectRate)
-    }
-    
     // 切换指定卡槽的网络类型
+    @discardableResult // 这个方法有返回值，但调用者可以选择不使用这个返回值，编译器不要警告
     func setDataRate(slot: Int, selectRate: Int64) -> Bool {
         if let context = getServiceSubscriptionContext(slot: slot) {
-            if let result = coreTelephonyClient.setMaxDataRate(context, rate: selectRate) { // 这个私有方法只有错误的时候才会返回结果
-                NSLog("[TrollSIMSwitcher] Switching the network type returns:\(result)")
-                return false
-            } else {
-                return true
-            }
+            return coreTelephonyClient.setMaxDataRate(context, rate: selectRate) == nil // 这个私有方法只有错误的时候才会返回结果
         }
         return false
     }
     
     // 切换当前数据流量的卡槽的网络类型
+    @discardableResult // 这个方法有返回值，但调用者可以选择不使用这个返回值，编译器不要警告
     func setDataPreferredRate(selectRate: Int64) -> Bool {
         do {
             let context = try getDataPreferredContext()
-            if let result = coreTelephonyClient.setMaxDataRate(context, rate: selectRate) {
-                NSLog("[TrollSIMSwitcher] Switching the network type returns:\(result)")
-                return false
-            } else {
-                return true
-            }
+            return coreTelephonyClient.setMaxDataRate(context, rate: selectRate) == nil // 这个私有方法只有错误的时候才会返回结果
         } catch {
             return false
         }
     }
-    
-    func setDataPreferredRate(selectRate: DataRates) -> Bool {
-        return setDataPreferredRate(selectRate: selectRate.rawValue)
-    }
-    
     
     // 回调 通知当前状态更改
     private func notifyUpdate() {

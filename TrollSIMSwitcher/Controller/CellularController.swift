@@ -6,17 +6,75 @@ class CellularController {
     
     private let coreTelephonyController = CoreTelephonyController.instance
     private let cellularPlanManager = CTCellularPlanController.instance
+    private let radioPreferencesController = RadioPreferencesController.instance
     
     private init() {}
     
     // 获取全部卡槽信息
     func getAllSIMSlots() -> [SIMSlot] {
-        return coreTelephonyController.getAllSIMSlots()
+        var slots: [SIMSlot] = []
+        
+        let slotCount = coreTelephonyController.getDeviceSlotCount() // 获取卡槽数量
+        
+        if slotCount == 0 { // 拒绝Wi-Fi版iPad或者证书签名情况
+            return []
+        }
+        
+        let dataPreferredSlotID = getDataPreferredSlotID()
+
+        for slot in 1...slotCount {
+            //获取当前卡槽信息
+            if let context = coreTelephonyController.getServiceSubscriptionContext(slot: slot) {
+                do {
+                    // 获取当前卡槽位
+                    let slotID = Int(context.slotID)
+                    // 获取当前卡槽的UUID
+                    let uuid = context.uuid ?? UUID()
+                    // 获取当前卡槽的ICCID
+                    let iccid = try coreTelephonyController.getSlotICCID(context: context) ?? ""
+                    // 获取当前卡标签
+                    let label = try coreTelephonyController.getSlotLabelText(context: context)
+                    // 获取当前运营商的名称
+                    let operatorName = try coreTelephonyController.getSlotLocalizedOperatorName(context: context)
+                    // 获取当前卡的电话号码
+                    let phoneNumber = try coreTelephonyController.getSlotPhoneNumber(context: context)
+                    // 获取当前SIM卡状态
+                    let isEnabled = try coreTelephonyController.getSlotSIMStatus(context: context) == "kCTSIMSupportSIMStatusReady"
+                    // 获取当前注册状态
+                    let registrationStatus = CoreTelephonyEnumMapper.mapRegistrationStatus(try coreTelephonyController.getSlotRegistrationStatus(context: context))
+                    // 判断是否是当前的卡槽是首选流量卡
+                    let isDataPreferred = dataPreferredSlotID == slotID
+                    // 获取当前卡支持的网络类型
+                    let supportedDataRates = coreTelephonyController.getSlotSupportRates(context: context).map { Int($0) }
+                    // 获取当前卡设置的网络类型
+                    let currentRate: Int = Int(try coreTelephonyController.getSlotSelectRate(context: context))
+                    
+                    // 将数据放入列表
+                    slots.append(SIMSlot(slot: slotID, uuid: uuid, ICCID: iccid, label: label, operatorName: operatorName, phoneNumber: phoneNumber, registrationStatus: registrationStatus, isEnabled: isEnabled, isDataPreferred: isDataPreferred, supportedRates: supportedDataRates, currentRate: currentRate))
+                    
+                } catch let error as NSError {
+                    NSLog("[TrollSIMSwitcher] getAllSIMSlots error slot: \(slot) message: \(error.code)  \(error.localizedDescription)")
+                }
+                
+            }
+        }
+        
+        return slots
     }
     
     // 获取全部已经启用的卡槽信息
     func getAllEnabledSlots() -> [SIMSlot] {
-        return coreTelephonyController.getAllEnabledSlots()
+        var SIMSlotList = getAllSIMSlots()
+        if SIMSlotList.count > 1 { // 解决下iPad没启用蜂窝数据的时候什么都不显示的情况
+            // 筛选掉未启用的卡槽信息
+            SIMSlotList = SIMSlotList.filter { $0.isEnabled }
+        }
+        return SIMSlotList
+    }
+    
+    // 获取设备是否开启了飞行模式
+    func getDeviceAirplaneModeEnabled() -> Bool {
+        return radioPreferencesController.getAirplaneMode()
     }
     
     // 获取当前首选卡槽的ID
@@ -30,7 +88,7 @@ class CellularController {
     
     // 获取卡槽中卡的ICCID
     func getSlotCardICCID(slotID: Int) -> String {
-        return coreTelephonyController.getSlotCardICCID(slotID: slotID) ?? ""
+        return coreTelephonyController.getSlotICCID(slotID: slotID) ?? ""
     }
     
     // 获取当前首选卡槽的网络类型
@@ -66,7 +124,7 @@ class CellularController {
     // 将流量卡切换到另一个卡槽
     func toggleDataSlot() -> Bool {
         // 如果只有一个启用的卡，那不需要切换
-        if coreTelephonyController.getAllEnabledSlots().count < 2 {
+        if getAllEnabledSlots().count < 2 {
             return false
         }
         do {
@@ -79,13 +137,13 @@ class CellularController {
     }
     
     // 设置蜂窝数据卡的网络类型
-    func setDataRate(SIMSlot: SIMSlot, selectRate: Int64) -> Bool {
-        return coreTelephonyController.setDataRate(SIMSlot: SIMSlot, selectRate: selectRate)
+    func setDataRate(SIMSlot: SIMSlot, selectRate: Int) -> Bool {
+        return coreTelephonyController.setDataRate(slot: SIMSlot.slot, selectRate: Int64(selectRate))
     }
     
     // 设置首选蜂窝数据卡的网络类型
     func setDataPreferredRate(selectRate: DataRates) -> Bool {
-        return coreTelephonyController.setDataPreferredRate(selectRate: selectRate.rawValue)
+        return coreTelephonyController.setDataPreferredRate(selectRate: Int64(selectRate.rawValue))
     }
     
     // 切换当前选择的卡的数据类型 例如4G 5G之间切换
@@ -116,7 +174,6 @@ class CellularController {
 
             return coreTelephonyController.setDataPreferredRate(selectRate: targetRate)
             
-//            return coreTelephonyController.setDataPreferredRate(selectRate: try coreTelephonyController.getDataPreferredSlotRate() == supportRates.last! ? supportRates[supportRates.count - 2] : supportRates.last!)
         } catch {
             return false
         }

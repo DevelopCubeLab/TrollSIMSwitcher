@@ -301,22 +301,22 @@ class SettingsUtils {
             // 切换网络类型的判断
             
             // 获取当前流量卡
-            let slot = SIMSlotList.first { $0.isDataPreferred }
-            
-            for rate in slot?.supportedRates?.rates as! [Int] {
-                let networkText = CellularUtils.getRateText(rate: rate)
-                // 添加可以切换的网络类型
-                shortcutItems.append(
-                    UIApplicationShortcutItem(
-                        type: SettingsUtils.SwitchNetworkID.appending(networkText),
-                        localizedTitle: String.localizedStringWithFormat(NSLocalizedString("SwitchTo", comment: ""), networkText),
-                        localizedSubtitle: nil,
-                        icon: UIApplicationShortcutIcon(systemImageName: "antenna.radiowaves.left.and.right"),
-                        userInfo: nil
-                    ))
+            if let slot = SIMSlotList.first(where: { $0.isDataPreferred }) {
+                for rate in slot.supportedRates {
+                    let networkText = CellularUtils.getRateText(rate: rate)
+                    // 添加可以切换的网络类型
+                    shortcutItems.append(
+                        UIApplicationShortcutItem(
+                            type: SettingsUtils.SwitchNetworkID.appending(networkText),
+                            localizedTitle: String.localizedStringWithFormat(NSLocalizedString("SwitchTo", comment: ""), networkText),
+                            localizedSubtitle: nil,
+                            icon: UIApplicationShortcutIcon(systemImageName: "antenna.radiowaves.left.and.right"),
+                            userInfo: nil
+                        ))
+                }
+                // 向系统提交当前的快捷方式
+                application.shortcutItems = shortcutItems
             }
-            // 向系统提交当前的快捷方式
-            application.shortcutItems = shortcutItems
             
         } else { // 禁用桌面快捷方式
             application.shortcutItems = []

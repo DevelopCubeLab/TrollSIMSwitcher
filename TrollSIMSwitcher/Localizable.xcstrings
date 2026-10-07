@@ -65,6 +65,22 @@
         }
       }
     },
+    "AirplaneMode" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Airplane Mode"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "飞行模式"
+          }
+        }
+      }
+    },
     "Alert" : {
       "localizations" : {
         "en" : {
@@ -173,6 +189,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "蜂窝切换器"
+          }
+        }
+      }
+    },
+    "Checking" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在获取…"
           }
         }
       }
@@ -287,22 +319,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "关闭Wi-Fi自动加入\n(AirDrop不受影响)"
-          }
-        }
-      }
-    },
-    "EmergencyOnly" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Emergency Only"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "仅限紧急呼叫"
           }
         }
       }
@@ -579,22 +595,6 @@
         }
       }
     },
-    "NoService" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No Service"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无服务"
-          }
-        }
-      }
-    },
     "Notifications" : {
       "localizations" : {
         "en" : {
@@ -801,6 +801,108 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "刷新蜂窝网络信号通知"
+          }
+        }
+      }
+    },
+    "RegistrationDenied" : {
+      "comment" : "网络拒绝注册",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registration Denied"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "网络拒绝注册"
+          }
+        }
+      }
+    },
+    "RegistrationEmergencyOnly" : {
+      "comment" : "仅限紧急呼叫",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emergency Only"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅限紧急呼叫"
+          }
+        }
+      }
+    },
+    "RegistrationNotRegistered" : {
+      "comment" : "未注册",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not Registered"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未注册"
+          }
+        }
+      }
+    },
+    "RegistrationRegisteredHome" : {
+      "comment" : "已注册（本地网络）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registered (Home)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已注册（本地网络）"
+          }
+        }
+      }
+    },
+    "RegistrationRegisteredRoaming" : {
+      "comment" : "已注册（漫游网络）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registered (Roaming)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已注册（漫游网络）"
+          }
+        }
+      }
+    },
+    "RegistrationSearching" : {
+      "comment" : "搜索网络中",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Searching…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在搜索..."
           }
         }
       }
